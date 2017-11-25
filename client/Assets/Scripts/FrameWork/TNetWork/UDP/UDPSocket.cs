@@ -47,11 +47,9 @@ namespace TNetWork.Net
 			try{
 				
 				int ret = this.socket.SendTo (bytes, remoteEndPoint.EndPoint);
-				Debug.Log("Send packet to {0}, result: {1}", remoteEndPoint.EndPoint, ret);
+				Debug.LogFormat("Send packet to {0}, result: {1}", remoteEndPoint.EndPoint, ret);
 
 			}catch(SocketException ex){
-
-
 
 			}
 		}
