@@ -1,4 +1,4 @@
-option java_package = "com.baxanet.proto";
+option java_package = "com.test.proto";
 
 message LoginRequest {
 	optional int32 msgId = 1 [default = 200];
