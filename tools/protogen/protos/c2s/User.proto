@@ -1,0 +1,14 @@
+option java_package = "com.baxanet.proto";
+
+message LoginRequest {
+	optional int32 msgId = 1 [default = 200];
+	required string name = 2;
+	required string pwd = 3;
+}
+
+message LoginResponse {
+	optional int32 msgId = 1 [default = -200];
+	required int64 uid = 2;
+	// 服务端用
+	optional string assignIpPort = 3;
+}

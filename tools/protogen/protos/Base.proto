@@ -1,0 +1,30 @@
+option java_package = "com.baxanet.proto";
+
+/*
+ * 通用数据Bean
+ */
+
+// 基类消息: 特殊，所以尽管是Bean，不以Info结尾
+message BaseMsg {
+	// 服务端用: 自动设置
+	optional int64 uid = 1;
+	// 正值N-请求消息 负值N-返回消息(对应请求消息N)
+	required int32 msgId = 2;
+	required bytes data = 3;
+}
+
+message VectorInfo {
+	required float x = 1;
+	required float y = 2;
+}
+
+message ActionInfo {
+	// 客户端发送不需要发送uid
+	optional int64 uid = 1;
+	required int32 qid = 2;
+	required VectorInfo position = 3;
+	required VectorInfo velocity = 4;
+	required VectorInfo acceleration = 5;
+	required int64 time = 6;
+	required int32 size = 7;
+}

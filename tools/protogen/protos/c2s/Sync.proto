@@ -1,0 +1,12 @@
+option java_package = "com.baxanet.proto";
+import "Base.proto";
+
+message ActionRequest {
+	optional int32 msgId = 1 [default = 300];
+	required ActionInfo ai = 2;
+}
+
+message NearbyResponse {
+	optional int32 msgId = 1 [default = -301];
+	repeated ActionInfo ais = 2;
+}
