@@ -29,12 +29,15 @@
 
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 
 namespace TNetWork.Net
 {
 	public class UDPSocket : SocketBase
 	{
+        private Queue<NetPackage> buffers = new Queue<NetPackage>();
+
 		public UDPSocket(SocketManager socketMgr, NetEventListener listener) : base(socketMgr, listener){
 			NetType = TNetType.Udp;
 		}

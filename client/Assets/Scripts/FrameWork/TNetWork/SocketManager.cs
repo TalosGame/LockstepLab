@@ -35,18 +35,17 @@ using UnityEngine;
 
 namespace TNetWork.Net
 {
-	public class SocketManager : SingletonBase<SocketManager>
+	public class SocketManager
 	{
-		private Dictionary<NetIPEndPoint, SocketBase> sockets = new Dictionary<NetIPEndPoint, SocketBase>();
+        private SocketBase socket;
 
 		private NetEventListener listener;
 
 		private MLPoolManager poolMgr;
 
-		protected override void Init ()
-		{
-			InitPools ();
-		}
+        public SocketManager(){
+            InitPools ();
+        }
 
 		private void InitPools(){
 			poolMgr = MLPoolManager.Instance;
@@ -57,8 +56,7 @@ namespace TNetWork.Net
 			this.listener = listener;
 		}
 
-		public SocketBase CreateSocket(TNetType type){
-			SocketBase socket = null;
+		public void CreateSocket(TNetType type){
 			switch (type) {
 			case TNetType.Tcp:
 				socket = new TCPSocket(this, listener);
@@ -66,24 +64,24 @@ namespace TNetWork.Net
 			case TNetType.Udp:
 				socket = new UDPSocket(this, listener);
 				break;
+            default:
+                Debug.LogError("Unknown socket type. Create error!");
+                break;
 			}
-
-			return socket;
 		}
 
-		public bool AddSocket(SocketBase socket)
-		{
-			SocketBase cacheSockt = null;
-			NetIPEndPoint option = socket.IPEndPoint;
+        public void Connect(string host, int port){
 
-			if (sockets.TryGetValue (option, out cacheSockt)) {
-				Debug.LogError ("Have Same Socket connect address! type:" + cacheSockt.NetType);
-				return true;
-			}
+            if (socket == null){
+                return;
+            }
 
-			sockets.Add (option, socket);
-			return false;
-		}
+            socket.Connect(host, port);
+        }
+
+
+
+
 
 		public void PollEvents()
 		{

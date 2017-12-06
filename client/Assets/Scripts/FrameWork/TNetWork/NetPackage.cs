@@ -1,6 +1,6 @@
 ﻿//
-// Class:	NetConst.cs
-// Date:	2017/11/8 22:52
+// Class:	NetPackage.cs
+// Date:	12/6/2017 11:33:50 AM
 // Author: 	Miller
 // Email:	wangquan <wangquancomi@gmail.com>
 // QQ:		408310416
@@ -28,50 +28,18 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 
 namespace TNetWork.Net
 {
-	// delegate
-	delegate void OnMessageReceived(byte[] data, int length, int errorCode, NetIPEndPoint remoteEndPoint);
-
-	public enum TNetType
-	{
-		Unknown = 0,
-		Tcp,
-		Udp,
-	}
-
-	public enum NetEventType
-	{
-		ConnectSucess = 0,
-		ConnectFailure,
-	}
-
-    public enum UHeadDataType : byte
-    {
-        Data = 0,
-        Ack,
-    }
-
-    public enum UDPOptions
+    public class NetPackage
     {
 
-        ReliableOrdered,
-    }
-
-	public sealed class NetConst
-	{
-		public const string POOL_NET_EVENT = "pool_net_event";
-
-        #region udp const
-        // 这里可以根据需求自己调整
-        public static int SLIDING_WINDOW = 64;
-
-
-
-        #endregion
+        public byte[] body;
 
 
     }
 }
+
+
 

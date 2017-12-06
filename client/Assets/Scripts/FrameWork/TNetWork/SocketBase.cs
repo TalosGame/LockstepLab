@@ -42,21 +42,18 @@ namespace TNetWork.Net
 
 		private NetThread NetThread;
 
-		protected NetIPEndPoint ipEndPoint = new NetIPEndPoint();
-
-		public NetIPEndPoint IPEndPoint{
-			get{
-				return ipEndPoint;
-			}
-		}
+		protected NetIPEndPoint _ipEndPoint = new NetIPEndPoint();
+        public NetIPEndPoint IPEndPoint{
+            get { return _ipEndPoint; }
+        }
 
 		public TNetType NetType {
-			get{ 
-				return ipEndPoint.NetType;
+			get{
+                return _ipEndPoint.NetType;
 			}
 
 			set{
-				ipEndPoint.NetType = value;
+                _ipEndPoint.NetType = value;
 			}
 		}
 
@@ -65,11 +62,7 @@ namespace TNetWork.Net
 		}
 
 		public void Connect (string host, int port){
-			ipEndPoint.SetIPEndPoint(host, port);
-			if (socketMgr.AddSocket (this)) {
-				return;
-			}
-
+            _ipEndPoint.SetIPEndPoint(host, port);
 			Connect ();
 		}
 

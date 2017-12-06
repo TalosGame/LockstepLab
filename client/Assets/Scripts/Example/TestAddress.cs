@@ -10,14 +10,14 @@ public class TestAddress : MonoBehaviour, NetEventListener
 		//SocketBase sbase = new SocketBase();
 		//Debug.Log("Address Family:" + sbase.GetAddressFamily ("app.laiwanhb.com"));
 
-		SocketManager socketMgr = SocketManager.Instance;
+		SocketManager socketMgr = new SocketManager();
 		socketMgr.SetEventListener (this);
 
-		SocketBase tcpSocket = socketMgr.CreateSocket (TNetType.Tcp);
-		tcpSocket.Connect ("127.0.0.1", 1000);
+// 		socketMgr.CreateSocket (TNetType.Tcp);
+//         socketMgr.Connect("127.0.0.1", 1000);
 
-		SocketBase udpSocket = socketMgr.CreateSocket (TNetType.Tcp);
-		udpSocket.Connect ("127.0.0.1", 1000);
+		socketMgr.CreateSocket (TNetType.Tcp);
+        socketMgr.Connect("127.0.0.1", 1000);
 
 		int i = 0;
 		i++;
