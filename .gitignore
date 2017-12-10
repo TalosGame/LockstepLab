@@ -35,3 +35,6 @@ sysinfo.txt
 *.apk
 *.unitypackage
 client/Library/metadata/00/00000000000000009000000000000000
+client/obj/Debug/Assembly-CSharp.csproj.FilesWrittenAbsolute.txt
+client/obj/Debug/Assembly-CSharp.dll
+client/obj/Debug/Assembly-CSharp.dll.mdb

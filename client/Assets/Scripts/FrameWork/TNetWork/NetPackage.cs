@@ -30,14 +30,15 @@
 using System;
 using System.Collections.Generic;
 
-namespace TNetWork.Net
+namespace TG.Net
 {
     public class NetPackage
     {
+        public byte[] datas;
 
-        public byte[] body;
-
-
+		public int GetHeadSize(){
+			return 0;
+		}
     }
 }
 

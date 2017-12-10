@@ -39,7 +39,7 @@ public class MLObjectPool<T> : MLPoolBase<T> where T : class
 	public override void Init (T poolItem, int preloadAmount = 10, Transform parent = null, bool isLimit = true)
 	{
 		Type t = typeof(T);
-		this.itemName = t.FullName;
+		this.itemName = t.Name;
 
 		this.preloadAmount = preloadAmount;
 		this.limitAmount = this.preloadAmount << 1;

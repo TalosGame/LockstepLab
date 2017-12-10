@@ -28,20 +28,19 @@
 // THE SOFTWARE.
 using System;
 
-namespace TNetWork.Net
+namespace TG.Net
 {
 	public interface NetEventListener
 	{
 		void ReciveMessage (NetIPEndPoint peer, byte[] a);
+		void OnConnect ();
 	}
 
 	public class NetEvent
 	{
-		//public NetPeer Peer;
-		//public readonly NetDataReader DataReader = new NetDataReader();
-		//public NetEventType Type;
-		public NetIPEndPoint RemoteEndPoint;
-		public int AdditionalData;
+		public NetEventType Type;
+		//public NetIPEndPoint RemoteEndPoint;
+		//public int AdditionalData;
 		//public DisconnectReason DisconnectReason;
 	}
 

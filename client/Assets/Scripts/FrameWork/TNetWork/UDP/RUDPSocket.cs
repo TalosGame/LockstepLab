@@ -1,6 +1,6 @@
 ﻿//
-// Class:	NetConnectSockets.cs
-// Date:	2017/11/14 0:41
+// Class:	SRUSocket.cs
+// Date:	2017/12/9 12:06
 // Author: 	Miller
 // Email:	wangquan <wangquancomi@gmail.com>
 // QQ:		408310416
@@ -29,14 +29,51 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
+using UnityEngine;
 
-namespace TNetWork.Net
+namespace TG.Net
 {
-	public class NetConnectSockets
+	public class RUDPSocket : SocketBase
 	{
-		
+		#region send params
+		private Queue<NetPackage> sendingPackages = new Queue<NetPackage> ();
+		private int packageSequene = 0;
+		private int windowStIdx = 0;
+
+		private Queue<NetPackage> pendingPackages = new Queue<NetPackage>();
+		#endregion
+
+		public RUDPSocket(SocketManager socketMgr, NetEventListener listener) : base(socketMgr, listener){
+			NetType = TNetType.ROUDP;
+		}
+
+		protected override void Connect (){
+			this.socket = new Socket (IPEndPoint.GetAddressFamily(), SocketType.Dgram, ProtocolType.Udp);
+		}
+
+		public override void SendTo (byte[] bytes){
 
 
+
+			try{
+
+				//int ret = this.socket.SendTo (bytes, IPEndPoint.EndPoint);
+				//Debug.LogFormat("Send packet to {0}, result: {1}", IPEndPoint.EndPoint, ret);
+
+
+
+			}catch(SocketException ex){
+				Debug.LogError (ex);
+			}
+		}
+
+		//private void 
+
+		protected override void OnProcessLogic ()
+		{
+			
+		}
 	}
 }
 

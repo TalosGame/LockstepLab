@@ -29,22 +29,52 @@
 
 using System;
 
-namespace TNetWork.Net
+namespace TG.Net
 {
-	// delegate
+	#region net delegate
 	delegate void OnMessageReceived(byte[] data, int length, int errorCode, NetIPEndPoint remoteEndPoint);
+
+	delegate void OnConncect();
+
+	delegate void CallBack();
+	#endregion
 
 	public enum TNetType
 	{
 		Unknown = 0,
-		Tcp,
-		Udp,
+
+		/// <summary>
+		/// The tcp.
+		/// </summary>
+		TCP,
+
+		/// <summary>
+		/// The Unreliable UDP. Packets can be dropped, duplicated or arrive without order.
+		/// </summary>
+		UDP,
+
+		/// <summary>
+		/// The Reliable & Unorder UDP. All packets will be sent and received, but without order.
+		/// </summary>
+		RUUDP,
+
+		/// <summary>
+		/// Unreliable UDP. Packets can be dropped, but never duplicated and arrive in order.
+		/// </summary>
+		SUDP,
+
+		/// <summary>
+		/// The Reliable and ordered UDP. All packets will be sent and received in order.
+		/// </summary>
+		ROUDP,
 	}
 
 	public enum NetEventType
 	{
-		ConnectSucess = 0,
-		ConnectFailure,
+		Connect = 0,
+		DisConnect,
+		ReceiveMessage,
+		Error,
 	}
 
     public enum UHeadDataType : byte
@@ -53,21 +83,16 @@ namespace TNetWork.Net
         Ack,
     }
 
-    public enum UDPOptions
-    {
-
-        ReliableOrdered,
-    }
-
 	public sealed class NetConst
 	{
-		public const string POOL_NET_EVENT = "pool_net_event";
+		public const string POOL_NET_EVENT = "NetEvent";
+		public const string POOL_NET_PACKAGE = "NetPackage";
 
         #region udp const
         // 这里可以根据需求自己调整
-        public static int SLIDING_WINDOW = 64;
+		public const int SLIDING_WINDOW = 64;
 
-
+		public const int MAX_MTU = 512;
 
         #endregion
 

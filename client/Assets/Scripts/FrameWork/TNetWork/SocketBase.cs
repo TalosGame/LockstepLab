@@ -32,7 +32,7 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 
-namespace TNetWork.Net
+namespace TG.Net
 {
 	public abstract class SocketBase
 	{
@@ -40,7 +40,8 @@ namespace TNetWork.Net
 
 		private SocketManager socketMgr;
 
-		private NetThread NetThread;
+		private ThreadEx netThread;
+		private const int DefaultUpdateTime = 15;
 
 		protected NetIPEndPoint _ipEndPoint = new NetIPEndPoint();
         public NetIPEndPoint IPEndPoint{
@@ -64,16 +65,25 @@ namespace TNetWork.Net
 		public void Connect (string host, int port){
             _ipEndPoint.SetIPEndPoint(host, port);
 			Connect ();
+
+			CreateEvent (NetEventType.Connect);
+
+//			netThread = new ThreadEx ("Process update logic", DefaultUpdateTime, ProcessLogic);
+//			netThread.Start ();
 		}
 
 		protected virtual void Connect(){}
 
-		public abstract void SendTo (byte[] bytes, NetIPEndPoint remoteEndPoint = null);
-
-		protected void CreateNetEvent(){
-			
+		protected void CreateEvent(NetEventType type){
+			socketMgr.CreateEvent (type);
 		}
 
-	
+		private void ProcessLogic(){
+			OnProcessLogic ();
+		}
+
+		protected virtual void OnProcessLogic(){}
+
+		public abstract void SendTo (byte[] bytes);
 	}
 }

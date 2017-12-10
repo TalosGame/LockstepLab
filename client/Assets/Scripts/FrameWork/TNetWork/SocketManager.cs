@@ -31,38 +31,42 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using UnityEngine;
 
-namespace TNetWork.Net
+namespace TG.Net
 {
 	public class SocketManager
 	{
         private SocketBase socket;
 
+		private MLPoolManager poolMgr;
 		private NetEventListener listener;
 
-		private MLPoolManager poolMgr;
+		private Queue<NetEvent> eventsQueue = new Queue<NetEvent>();
 
-        public SocketManager(){
-            InitPools ();
-        }
+		public void Init(NetEventListener listener){
+			InitPools ();
+
+			this.listener = listener;
+		}
 
 		private void InitPools(){
 			poolMgr = MLPoolManager.Instance;
-			poolMgr.CreatePool<MLObjectPool<NetEvent>, NetEvent>(preloadAmount:10);
-		}
-
-		public void SetEventListener(NetEventListener listener){
-			this.listener = listener;
+			poolMgr.CreatePool<MLObjectPool<NetEvent>, NetEvent>(preloadAmount:50, isLimit:false);
+			poolMgr.CreatePool<MLObjectPool<NetPackage>, NetPackage>(preloadAmount:50, isLimit:false);
 		}
 
 		public void CreateSocket(TNetType type){
 			switch (type) {
-			case TNetType.Tcp:
+			case TNetType.TCP:
 				socket = new TCPSocket(this, listener);
 				break;
-			case TNetType.Udp:
+			case TNetType.UDP:
 				socket = new UDPSocket(this, listener);
+				break;
+			case TNetType.ROUDP:
+				socket = new RUDPSocket (this, listener);
 				break;
             default:
                 Debug.LogError("Unknown socket type. Create error!");
@@ -71,7 +75,6 @@ namespace TNetWork.Net
 		}
 
         public void Connect(string host, int port){
-
             if (socket == null){
                 return;
             }
@@ -79,24 +82,44 @@ namespace TNetWork.Net
             socket.Connect(host, port);
         }
 
-
-
-
-
-		public void PollEvents()
-		{
-
+		public void SendMessage(string str){
+			byte[] bytes = UTF8Encoding.Default.GetBytes (str);
+			socket.SendTo (bytes);
 		}
 
-		private void CreateEvent()
-		{
+		#region net event
+		public void CreateEvent(NetEventType type){
 
+			NetEvent evt = MLPoolManager.Instance.Spawn<NetEvent> (NetConst.POOL_NET_EVENT);
+			evt.Type = type;
+
+			lock (eventsQueue)
+			{
+				eventsQueue.Enqueue(evt);
+			}
 		}
 
+		public void PollEvents(){
 
+			while (eventsQueue.Count > 0){
+				
+				NetEvent evt;
+				lock (eventsQueue)
+				{
+					evt = eventsQueue.Dequeue();
+				}
+				ProcessEvent(evt);
+			}
+		}
 
-
-
+		private void ProcessEvent(NetEvent evt){
+			switch (evt.Type) {
+			case NetEventType.Connect:
+				
+				break;
+			}
+		}
+		#endregion
 	}
 }
 

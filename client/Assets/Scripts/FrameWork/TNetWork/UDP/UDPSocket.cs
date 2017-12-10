@@ -32,25 +32,25 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 
-namespace TNetWork.Net
+namespace TG.Net
 {
 	public class UDPSocket : SocketBase
 	{
         private Queue<NetPackage> buffers = new Queue<NetPackage>();
 
 		public UDPSocket(SocketManager socketMgr, NetEventListener listener) : base(socketMgr, listener){
-			NetType = TNetType.Udp;
+			NetType = TNetType.UDP;
 		}
 
 		protected override void Connect (){
 			this.socket = new Socket (IPEndPoint.GetAddressFamily(), SocketType.Dgram, ProtocolType.Udp);
 		}
 
-		public override void SendTo (byte[] bytes, NetIPEndPoint remoteEndPoint){
+		public override void SendTo (byte[] bytes){
 			try{
 				
-				int ret = this.socket.SendTo (bytes, remoteEndPoint.EndPoint);
-				Debug.LogFormat("Send packet to {0}, result: {1}", remoteEndPoint.EndPoint, ret);
+				int ret = this.socket.SendTo (bytes, IPEndPoint.EndPoint);
+				Debug.LogFormat("Send packet to {0}, result: {1}", IPEndPoint.EndPoint, ret);
 
 			}catch(SocketException ex){
 

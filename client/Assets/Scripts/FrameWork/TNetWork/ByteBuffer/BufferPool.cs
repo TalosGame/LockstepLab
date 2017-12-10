@@ -1,6 +1,6 @@
 ﻿//
-// Class:	TCPSocket.cs
-// Date:	2017/11/8 22:35
+// Class:	BufferPool.cs
+// Date:	2017/12/10 20:25
 // Author: 	Miller
 // Email:	wangquan <wangquancomi@gmail.com>
 // QQ:		408310416
@@ -27,20 +27,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Collections.Generic;
 
 namespace TG.Net
 {
-	public class TCPSocket : SocketBase
+	public class BufferPool
 	{
-		public TCPSocket(SocketManager socketMgr, NetEventListener listener) : base(socketMgr, listener)
-		{
-			NetType = TNetType.TCP;
-		}
+		public List<ArraySegment<byte>> buffer;
 
-		public override void SendTo (byte[] bytes)
-		{
-			
-		}
+
+
+		public readonly ByteBuf byteBuf;
 	}
 }
 

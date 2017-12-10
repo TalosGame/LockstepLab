@@ -30,16 +30,52 @@
 using System;
 using System.Threading;
 
-namespace TNetWork.Net
+public class ThreadEx
 {
-	public class NetThread
-	{
-		private Thread netThread;
+	private Thread thread;
+	private bool isRunning;
 
-		public NetThread()
+	private string name;
+	private int sleepTime;
+	private Action callBack;
+
+	public ThreadEx(string name, int sleepTime, Action callBack){
+		this.name = name;
+		this.sleepTime = sleepTime;
+		this.callBack = callBack;
+	}
+
+	public void Start(){
+		if (isRunning) {
+			return;
+		}
+
+		isRunning = true;
+
+		thread = new Thread (ThreadLogic);
+		thread.Name = name;
+		thread.IsBackground = true;
+		thread.Start ();
+	}
+
+	public void Stop()
+	{
+		if (!isRunning) {
+			return;
+		}
+
+		thread.Abort ();
+		thread.Join ();
+
+		isRunning = false;
+	}
+
+	private void ThreadLogic()
+	{
+		while (isRunning)
 		{
-			
+			callBack();
+			Thread.Sleep(sleepTime);
 		}
 	}
 }
-

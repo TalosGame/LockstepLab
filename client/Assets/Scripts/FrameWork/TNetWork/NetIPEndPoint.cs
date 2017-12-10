@@ -31,7 +31,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace TNetWork.Net
+namespace TG.Net
 {
 	public sealed class NetIPEndPoint
 	{
