@@ -70,7 +70,7 @@ public class TestAddress : MonoBehaviour, NetEventListener
 
     void EnqueueExecute()
     {
-        for (int i = 1; i <= topValue; i++)
+        for (int i = 0; i <= topValue; i++)
         {
             queue.Enqueue(i);
         }
@@ -80,7 +80,7 @@ public class TestAddress : MonoBehaviour, NetEventListener
 
     void DequeueExecute()
     {
-        bool[] poppedValues = new bool[topValue + 1];
+        bool[] poppedValues = new bool[topValue];
         int poppedInt;
 
         do
@@ -93,9 +93,9 @@ public class TestAddress : MonoBehaviour, NetEventListener
 
                 poppedValues[poppedInt] = true;
             }
-        } while (poppedInt != topValue);
+        } while (poppedInt != (topValue - 1));
 
-        Debug.Log("DequeueExecute done!");
+        Debug.Log("DequeueExecute done! count:" + queue.count);
     }
 
 	public void ReciveMessage (NetIPEndPoint peer, byte[] a)
