@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 using TG.Net;
 using System.Threading;
@@ -9,7 +10,14 @@ public class TestAddress : MonoBehaviour, NetEventListener
 	private ThreadEx thread;
 
     LockFreeQueue<int> queue;
+    LockFreeStack<int> stack;
     private int topValue = 10000;
+
+    object _mtuMutex = new object();
+
+    Queue<int> queue1 = new Queue<int>();
+
+    Stopwatch sw;
 
 	void Start () 
 	{
@@ -46,6 +54,8 @@ public class TestAddress : MonoBehaviour, NetEventListener
 // 		Debug.Log ("num:" + num);
 
         queue = new LockFreeQueue<int>();
+        stack = new LockFreeStack<int>();
+
 //         queue.Enqueue(1);
 //         queue.Enqueue(2);
 // 
@@ -55,6 +65,8 @@ public class TestAddress : MonoBehaviour, NetEventListener
 
 //        queue.Enqueue(1);
 
+        sw = Stopwatch.StartNew();
+
         Thread reporter = new Thread(new ThreadStart(EnqueueExecute));
         reporter.IsBackground = true;
         reporter.Start();
@@ -63,19 +75,26 @@ public class TestAddress : MonoBehaviour, NetEventListener
         reporter1.IsBackground = true;
         reporter1.Start();
 
+//         Thread reporter = new Thread(new ThreadStart(EnqueueExecute1));
+//         reporter.IsBackground = true;
+//         reporter.Start();
+// 
+//         Thread reporter1 = new Thread(new ThreadStart(DequeueExecute1));
+//         reporter1.IsBackground = true;
+//         reporter1.Start();
+
 		UDebug.logEnable = true;
 		UDebug.Log (LogType.warning, "test error log");
 	}
 
-
     void EnqueueExecute()
     {
-        for (int i = 0; i <= topValue; i++)
+        for (int i = 0; i < topValue; i++)
         {
             queue.Enqueue(i);
         }
 
-        Debug.Log("EnqueueExecute done!");
+        UnityEngine.Debug.Log("EnqueueExecute done!");
     }
 
     void DequeueExecute()
@@ -89,13 +108,51 @@ public class TestAddress : MonoBehaviour, NetEventListener
             if (poppedInt != 0)
             {
                 if (poppedValues[poppedInt])
-                    Debug.LogFormat("{0} has been popped before!", poppedInt);
+                    UnityEngine.Debug.LogFormat("{0} has been popped before!", poppedInt);
 
                 poppedValues[poppedInt] = true;
             }
         } while (poppedInt != (topValue - 1));
 
-        Debug.Log("DequeueExecute done! count:" + queue.count);
+        UnityEngine.Debug.Log("DequeueExecute done! count:" + queue.count + " time:" + sw.Elapsed.Milliseconds);
+    }
+
+    void EnqueueExecute1()
+    {
+        for (int i = 0; i < topValue; i++)
+        {
+            lock(_mtuMutex)
+            {
+                queue1.Enqueue(i);
+            }
+        }
+
+        UnityEngine.Debug.Log("EnqueueExecute done!");
+    }
+
+    void DequeueExecute1()
+    {
+        bool[] poppedValues = new bool[topValue];
+        int poppedInt;
+
+        do
+        {
+            lock(_mtuMutex)
+            {
+                poppedInt = queue1.Dequeue();
+
+                if (poppedInt != 0)
+                {
+                    if (poppedValues[poppedInt])
+                        UnityEngine.Debug.LogFormat("{0} has been popped before!", poppedInt);
+
+                    poppedValues[poppedInt] = true;
+                }
+            }
+
+        } while (poppedInt != (topValue - 1));
+
+        UnityEngine.Debug.Log("DequeueExecute done! count:" + queue.count + " time:" + sw.Elapsed.Milliseconds);
     }
 
 	public void ReciveMessage (NetIPEndPoint peer, byte[] a)
@@ -112,7 +169,7 @@ public class TestAddress : MonoBehaviour, NetEventListener
 
 	public void CallBack()
 	{
-		Debug.Log ("ssss" + num);
+        UnityEngine.Debug.Log("ssss" + num);
 
 		num++;
 		if (num >= 10) {

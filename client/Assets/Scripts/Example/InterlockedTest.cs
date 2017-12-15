@@ -10,31 +10,31 @@ public class InterlockedTest : MonoBehaviour
     private static int threadCount = 0;
     private static System.Random rnd = new System.Random();
 
-	void Start ()
+    void Start()
     {
-//         int num = 0;
-//         Interlocked.Increment(ref num);
-//         Debug.Log(num);
-//         Interlocked.Decrement(ref num);
-//         Debug.Log(num);
-//         Debug.Log(Interlocked.Exchange(ref num, 10));
-//         Debug.Log(num);
-//         Debug.Log(Interlocked.CompareExchange(ref num, 100, 10));
-//         Debug.Log(num);	
+        int num = 0;
+        Interlocked.Increment(ref num);
+        Debug.Log(num);
+        Debug.Log(Interlocked.Decrement(ref num));
+        Debug.Log(num);
+        Debug.Log(Interlocked.Exchange(ref num, 10));
+        Debug.Log(num);
+        Debug.Log(Interlocked.CompareExchange(ref num, 100, 10));
+        Debug.Log(num);
 
-        //创建RptThread线程，每隔一秒通报有几个线程存在  
-        Thread reporter = new Thread(new ThreadStart(RptThread));
-        //设置为后台线程  
-        reporter.IsBackground = true;
-        reporter.Start();
-
-        //创建50个RndThreadFunc线程  
-        Thread[] rndThreads = new Thread[50];
-        for (int i = 0; i < 50; i++)
-        {
-            rndThreads[i] = new Thread(new ThreadStart(RndThreadFunc));
-            rndThreads[i].Start();
-        }
+        //         //创建RptThread线程，每隔一秒通报有几个线程存在  
+        //         Thread reporter = new Thread(new ThreadStart(RptThread));
+        //         //设置为后台线程  
+        //         reporter.IsBackground = true;
+        //         reporter.Start();
+        // 
+        //         //创建50个RndThreadFunc线程  
+        //         Thread[] rndThreads = new Thread[50];
+        //         for (int i = 0; i < 50; i++)
+        //         {
+        //             rndThreads[i] = new Thread(new ThreadStart(RndThreadFunc));
+        //             rndThreads[i].Start();
+        //            }
     }
 
     void RndThreadFunc()

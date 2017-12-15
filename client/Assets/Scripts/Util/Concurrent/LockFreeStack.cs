@@ -29,9 +29,46 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
-public class LockFreeStack
+public class LockFreeStack<T>
 {
+    public LinkNode<T> head;
 
+    public int count;
+
+    public LockFreeStack()
+    {
+        head = new LinkNode<T>();
+    }
+
+    public void Push(T item)
+    {
+        LinkNode<T> newNode = new LinkNode<T>();
+        newNode.item = item;
+
+        do{
+            newNode.next = head.next;
+        } while (!SyncMethods.CAS<LinkNode<T>>(ref head.next, newNode.next, newNode));
+
+        Interlocked.Increment(ref count);
+    }
+
+    public T Pop()
+    {
+        LinkNode<T> node;
+        T ret = default(T);
+
+        do{
+            node = head.next;
+            if (node == null){
+                return ret;
+            }
+
+        } while (!SyncMethods.CAS<LinkNode<T>>(ref head.next, node, node.next));
+
+        Interlocked.Decrement(ref count);
+        return node.item;
+    }
 }
 

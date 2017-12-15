@@ -33,8 +33,8 @@ using System.Threading;
 
 public class LockFreeQueue<T>
 {
-    public LinkNode<T> head = null;
-    public LinkNode<T> tail;
+    private LinkNode<T> head;
+    private LinkNode<T> tail;
 
     public int count;
 
