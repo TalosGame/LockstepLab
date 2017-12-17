@@ -1,11 +1,13 @@
 ﻿//
-// Class:	BufferPool.cs
-// Date:	2017/12/10 20:25
+// Class:	NetDataWriter.cs
+// Date:	2017/12/10 14:36
 // Author: 	Miller
 // Email:	wangquan <wangquancomi@gmail.com>
 // QQ:		408310416
 // Desc:
 //
+// 模拟Netty ByteBuf
+// 0 <= readerIndex <= writerIndex <= capacity。
 //
 // Copyright (c) 2017 - 2018
 //
@@ -26,18 +28,138 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace TG.Net
 {
 	public class BufferPool
 	{
-		public List<ArraySegment<byte>> buffer;
+		private static BufferPool _defaultPool;
 
+		private readonly int chunkNum;
+		private readonly int chunkSize;
+		private readonly int segmentSize;
+		private readonly bool autoAlloc;
 
+		private LockFreeStack<ArraySegment<byte>> buffers = new LockFreeStack<ArraySegment<byte>> ();
 
-		public readonly ByteBuf byteBuf;
+		public static BufferPool DefaultPool{
+			get{
+				if(_defaultPool == null)
+					_defaultPool = new BufferPool (1, 1024, 1);
+				
+				return _defaultPool;
+			}
+		}
+
+		public BufferPool(int chunkNum, int chunkSize, int allocNum)
+			: this(chunkNum, chunkSize, 1, true){
+		}
+
+		public BufferPool(int chunkNum, int chunkSize, int initNum, bool autoAlloc){
+			if (chunkNum <= 0) {
+				throw new ArgumentException ("segmentSize");
+			}
+
+			if (chunkSize <= 0) {
+				throw new ArgumentException ("chunkSize");
+			}
+
+			if (initNum < 0) {
+				throw new ArgumentException ("size");
+			}
+
+			this.chunkNum = chunkNum;
+			this.chunkSize = chunkSize;
+			this.segmentSize = this.chunkNum * this.chunkSize;
+
+			this.autoAlloc = true;
+			Thread.MemoryBarrier ();
+
+			for (int i = 0; i < initNum; i++) {
+				CreateSegment (true);
+			}
+
+			this.autoAlloc = autoAlloc;
+		}
+
+		private void CreateSegment(bool forceCreate){
+			if (!this.autoAlloc) {
+				return;
+			}
+
+			// 非强制的情况，如果数据段已小于池里总数的一半就创建
+			if (!forceCreate && buffers.count > chunkNum / 2) {
+				return;
+			}
+
+			byte[] bytes = new byte[segmentSize];
+			for (int i = 0; i < chunkNum; i++) {
+				ArraySegment<byte> buffer = new ArraySegment<byte> (bytes, i * chunkSize, chunkSize);
+				buffers.Push (buffer);
+			}
+		}
+
+		public ArraySegment<byte> ObtainSegment(){
+			ArraySegment<byte> ret = buffers.Pop ();
+			if (ret != default(ArraySegment<byte>)) {
+				return ret;
+			}
+
+			CreateSegment (false);
+
+			return buffers.Pop ();
+		}
+
+		public ArraySegment<byte>[] ObtainSegments(int num){
+			var ret = new ArraySegment<byte>[num];
+			int count = 0;
+
+			while (count < num) {
+				ArraySegment<byte> segment = ObtainSegment ();
+				if (segment == default(ArraySegment<byte>)) {
+					break;
+				}
+				
+				ret [count++] = segment;
+			}
+
+			if (count == num) {
+				return ret;
+			}
+
+			RecycleSegments (ret);
+			return ret;
+		}
+
+		public void RecycleSegment(ArraySegment<byte> segment){
+			CheckBuffer (segment);
+			buffers.Push (segment);
+		}
+
+		public void RecycleSegments(IEnumerable<ArraySegment<byte>> segments){
+			if (segments == null) {
+				throw new Exception("Attempt to checking invalid buffer");
+			}
+
+			foreach(ArraySegment<byte> segment in segments){
+				if (segment == default(ArraySegment<byte>)) {
+					continue;
+				}
+
+				RecycleSegment (segment);
+			}
+		}
+
+		private void CheckBuffer(ArraySegment<byte> segment){
+			if (segment.Array == null || segment.Count == 0 || segment.Array.Length < segment.Offset + segment.Count)
+				throw new Exception("Attempt to checking invalid buffer");
+			if (segment.Count != chunkSize) 
+				throw new ArgumentException("Buffer was not of the same chunk size as the buffer manager", "buffer");
+		}
 	}
 }
 

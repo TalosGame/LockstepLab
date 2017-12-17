@@ -40,6 +40,7 @@ public class LockFreeStack<T>
     public LockFreeStack()
     {
         head = new LinkNode<T>();
+		head.item = default(T);
     }
 
     public void Push(T item)
