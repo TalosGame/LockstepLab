@@ -37,7 +37,10 @@ public class TBufferPool : MonoBehaviour {
 		byte[] bytes = new byte[]{ 1, 2, 3, 4, 5 };
 
 		using(ByteBuffer byteBuf = new ByteBuffer(1, BufferPool.DefaultPool)){
-			byteBuf.WriteBytes (bytes);	
+			//byteBuf.WriteBytes (bytes);
+			byteBuf.WriteInt(500);
+			byteBuf.WriteShort(500);
+			byteBuf.WriteByte(1);
 		}
 
 		int j = 0;

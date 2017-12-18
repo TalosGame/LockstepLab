@@ -110,7 +110,6 @@ namespace TG.Net
 			}
 
 			CreateSegment (false);
-
 			return buffers.Pop ();
 		}
 
@@ -140,12 +139,28 @@ namespace TG.Net
 			buffers.Push (segment);
 		}
 
-		public void RecycleSegments(IEnumerable<ArraySegment<byte>> segments){
+		public void RecycleSegments(ArraySegment<byte> []segments){
 			if (segments == null) {
 				throw new Exception("Attempt to checking invalid buffer");
 			}
 
-			foreach(ArraySegment<byte> segment in segments){
+			for(int i = 0; i < segments.Length; i++){
+				ArraySegment<byte> segment = segments[i];
+				if (segment == default(ArraySegment<byte>)) {
+					continue;
+				}
+
+				RecycleSegment (segment);
+			}
+		}
+
+		public void RecycleSegments(List<ArraySegment<byte>> segments){
+			if (segments == null) {
+				throw new Exception("Attempt to checking invalid buffer");
+			}
+
+			for(int i = 0; i < segments.Count; i++){
+				ArraySegment<byte> segment = segments[i];
 				if (segment == default(ArraySegment<byte>)) {
 					continue;
 				}

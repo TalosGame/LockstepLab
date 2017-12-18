@@ -26,12 +26,14 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
 namespace TG.Net
 {
-	public class ByteBuffer : IDisposable{
+	public unsafe class ByteBuffer : IDisposable{
 
 		struct Position{
 			public readonly int index;
@@ -78,16 +80,18 @@ namespace TG.Net
 		}
 
 		public void WriteInt(int val){
-			byte[] bytes = BitConverter.GetBytes (val);
-			WriteBytes (bytes);
+			byte* ptrVal = (byte*)&val;
+			Write(ptrVal, sizeof(int));
 		}
 
 		public void WriteShort(short val){
-			
+			byte* ptrVal = (byte*)&val;
+			Write(ptrVal, sizeof(short));
 		}
 
 		public void WriteByte(byte val){
-			
+			byte* ptrVal = (byte*)&val;
+			Write(ptrVal, sizeof(byte));
 		}
 
 		public void WriteBytes(byte[] bytes){
@@ -103,6 +107,34 @@ namespace TG.Net
 				throw new ArgumentOutOfRangeException("count");
 			
 			Write(new ArraySegment<byte>(bytes, offset, count));
+		}
+
+		private void Write(byte *srcPtr, int size) {
+			int writeNum = 0;
+			do{
+				Position pos = CountPostion (lenght);
+				CheckBuffer(pos.index);
+
+				ArraySegment<byte> curSegment = buffers[pos.index];
+
+				int canWrite = size - writeNum;
+				int leftBytes = curSegment.Count - curSegment.Offset;
+				canWrite = canWrite > leftBytes ? leftBytes : canWrite;
+
+				fixed(byte* ptrDst = curSegment.Array){
+					int idx = 0;
+					while(idx < canWrite){
+						int dstOffset = curSegment.Offset + pos.offset;
+						int ptrOffset = writeNum + idx;
+						*(ptrDst + dstOffset + ptrOffset) = *(srcPtr + ptrOffset);
+						idx++;
+					}
+				}
+
+				writeNum += canWrite;
+				lenght += canWrite;
+
+			}while(writeNum < size);
 		}
 
 		private void Write(ArraySegment<byte> segment){
