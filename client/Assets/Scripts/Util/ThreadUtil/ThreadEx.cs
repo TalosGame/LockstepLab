@@ -30,50 +30,48 @@
 using System;
 using System.Threading;
 
-public class ThreadEx
-{
-	private Thread thread;
-	private bool isRunning;
+namespace TG.ThreadX {
+    public class ThreadEx {
+        private Thread thread;
+        private bool isRunning;
 
-	private string name;
-	private int sleepTime;
-	private Action callBack;
+        private string name;
+        private int sleepTime;
+        private Action callBack;
 
-	public ThreadEx(string name, int sleepTime, Action callBack){
-		this.name = name;
-		this.sleepTime = sleepTime;
-		this.callBack = callBack;
-	}
+        public ThreadEx(string name, int sleepTime, Action callBack) {
+            this.name = name;
+            this.sleepTime = sleepTime;
+            this.callBack = callBack;
+        }
 
-	public void Start(){
-		if (isRunning) {
-			return;
-		}
+        public void Start() {
+            if (isRunning) {
+                return;
+            }
 
-		isRunning = true;
+            isRunning = true;
 
-		thread = new Thread (ThreadLogic);
-		thread.Name = name;
-		thread.IsBackground = true;
-		thread.Start ();
-	}
+            thread = new Thread(ThreadLogic);
+            thread.Name = name;
+            thread.IsBackground = true;
+            thread.Start();
+        }
 
-	public void Stop()
-	{
-		if (!isRunning) {
-			return;
-		}
+        public void Stop() {
+            if (!isRunning) {
+                return;
+            }
 
-		thread.Join ();
-		isRunning = false;
-	}
+            thread.Join();
+            isRunning = false;
+        }
 
-	private void ThreadLogic()
-	{
-		while (isRunning)
-		{
-			callBack();
-			Thread.Sleep(sleepTime);
-		}
-	}
+        private void ThreadLogic() {
+            while (isRunning) {
+                callBack();
+                Thread.Sleep(sleepTime);
+            }
+        }
+    }
 }

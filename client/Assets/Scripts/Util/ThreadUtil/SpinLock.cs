@@ -31,7 +31,7 @@ using System;
 using System.Collections;
 using System.Threading;
 
-namespace TG.ThreadEx {
+namespace TG.ThreadX {
 
     public class SpinLock {
         //0--未被占有， 1--已被占有  
