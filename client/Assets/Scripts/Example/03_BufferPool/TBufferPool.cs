@@ -1,8 +1,10 @@
-﻿using System;
+﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Threading;
 using TG.Net;
+
 
 public class TBufferPool : MonoBehaviour {
 
@@ -34,20 +36,39 @@ public class TBufferPool : MonoBehaviour {
 //			Debug.Log ("len:" + buf.Array.Length + " offset:" + buf.Offset + " count:" + buf.Count);
 //		}
 
-		byte[] bytes = new byte[]{ 1, 2, 3, 4, 5 };
+// 		byte[] bytes = new byte[]{ 1, 2, 3, 4, 5 };
+// 
+		ByteBuffer byteBuf = new ByteBuffer(1, BufferPool.DefaultPool);
+		//byteBuf.WriteBytes (bytes);
+		byteBuf.WriteInt(500);
+		byteBuf.WriteShort(500);
+		byteBuf.WriteByte(1);
 
-		using(ByteBuffer byteBuf = new ByteBuffer(1, BufferPool.DefaultPool)){
-			//byteBuf.WriteBytes (bytes);
-			byteBuf.WriteInt(500);
-			byteBuf.WriteShort(500);
-			byteBuf.WriteByte(1);
-		}
+        int ret = byteBuf.ReadInt();
 
-		int j = 0;
-		j++;
+        //byte []bytes = byteBuf.ToBytes();
+        int i = 0;
+        i++;
+
+// 		int j = 0;
+// 		j++;
+// 
+//         int maxArrayLength = 1024 * 1024;
+//         const int MinimumArrayLength = 0x10, MaximumArrayLength = 0x40000000;
+//         if (maxArrayLength > MaximumArrayLength)
+//         {
+//             maxArrayLength = MaximumArrayLength;
+//         }
+//         else if (maxArrayLength < MinimumArrayLength)
+//         {
+//             maxArrayLength = MinimumArrayLength;
+//         }
+// 
+//         int ret = SelectBucketIndex(maxArrayLength);
+//         Debug.Log("bucket index==" + ret);
+
 
 		//var segments = new ArraySegment<byte>[2];
-		//segments
 	}
 
 //	private IEnumerable<ArraySegment<byte>> GetBuffs()
@@ -60,4 +81,20 @@ public class TBufferPool : MonoBehaviour {
 //
 //		return result;
 //	}
+
+    internal static int SelectBucketIndex(int bufferSize)
+    {
+        Debug.LogAssertion(bufferSize > 0);
+
+        uint bitsRemaining = ((uint)bufferSize - 1) >> 4;
+
+        int poolIndex = 0;
+        if (bitsRemaining > 0xFFFF) { bitsRemaining >>= 16; poolIndex = 16; }
+        if (bitsRemaining > 0xFF) { bitsRemaining >>= 8; poolIndex += 8; }
+        if (bitsRemaining > 0xF) { bitsRemaining >>= 4; poolIndex += 4; }
+        if (bitsRemaining > 0x3) { bitsRemaining >>= 2; poolIndex += 2; }
+        if (bitsRemaining > 0x1) { bitsRemaining >>= 1; poolIndex += 1; }
+
+        return poolIndex + (int)bitsRemaining;
+    }
 }

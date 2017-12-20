@@ -1,6 +1,6 @@
 ﻿//
-// Class:	BufferPool.cs
-// Date:	12/20/2017 7:55:36 PM
+// Class:	SpinLock.cs
+// Date:	12/20/2017 8:32:16 PM
 // Author: 	Miller
 // Email:	wangquan <wangquancomi@gmail.com>
 // QQ:		408310416
@@ -28,45 +28,31 @@
 // THE SOFTWARE.
 
 using System;
-using System.Collections.Generic;
+using System.Collections;
+using System.Threading;
 
-namespace TG.Net {
+namespace TG.ThreadEx {
 
-    public class BufferPool1 {
+    public class SpinLock {
+        //0--未被占有， 1--已被占有  
+        private int theLock = 0;
+        private int spinWait;
 
-        //class 
-        private int _chunkNum;
-        public int ChunkNum {
-            get { return _chunkNum; }
-            set { _chunkNum = value; }
+        public SpinLock(int spineWait) {
+            this.spinWait = spineWait;
         }
 
-        private readonly int chunkSize;
-        public byte[][] buffers;
-
-        public BufferPool1(int chunkNum, int chunkSize)
-        {
-            this._chunkNum = chunkNum;
-            this.chunkSize = chunkSize;
-            this.buffers = new byte[chunkNum][];
-
-            for (int i = 0; i < chunkNum; i++) {
-                this.buffers[i] = new byte[chunkSize];
+        public void Enter() {
+            while (Interlocked.CompareExchange(ref theLock, 1, 0) == 1) {
+                Thread.Sleep(spinWait);
             }
         }
 
-        public byte[] GetBuffer(int size) {
-            for (int i = 0; i < buffers.Length; i++) { 
-                
-            }
-
-            return null;
-        }
-
-        public void ReturnBuffer(byte[] bytes) {
-            
+        public void Exit() {
+            Interlocked.Exchange(ref theLock, 0);
         }
     }
 }
+
 
 

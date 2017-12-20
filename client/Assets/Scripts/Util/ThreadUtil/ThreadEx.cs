@@ -1,6 +1,6 @@
 ﻿//
-// Class:	BufferPool.cs
-// Date:	12/20/2017 7:55:36 PM
+// Class:	NetThread.cs
+// Date:	2017/11/13 23:33
 // Author: 	Miller
 // Email:	wangquan <wangquancomi@gmail.com>
 // QQ:		408310416
@@ -28,45 +28,52 @@
 // THE SOFTWARE.
 
 using System;
-using System.Collections.Generic;
+using System.Threading;
 
-namespace TG.Net {
+public class ThreadEx
+{
+	private Thread thread;
+	private bool isRunning;
 
-    public class BufferPool1 {
+	private string name;
+	private int sleepTime;
+	private Action callBack;
 
-        //class 
-        private int _chunkNum;
-        public int ChunkNum {
-            get { return _chunkNum; }
-            set { _chunkNum = value; }
-        }
+	public ThreadEx(string name, int sleepTime, Action callBack){
+		this.name = name;
+		this.sleepTime = sleepTime;
+		this.callBack = callBack;
+	}
 
-        private readonly int chunkSize;
-        public byte[][] buffers;
+	public void Start(){
+		if (isRunning) {
+			return;
+		}
 
-        public BufferPool1(int chunkNum, int chunkSize)
-        {
-            this._chunkNum = chunkNum;
-            this.chunkSize = chunkSize;
-            this.buffers = new byte[chunkNum][];
+		isRunning = true;
 
-            for (int i = 0; i < chunkNum; i++) {
-                this.buffers[i] = new byte[chunkSize];
-            }
-        }
+		thread = new Thread (ThreadLogic);
+		thread.Name = name;
+		thread.IsBackground = true;
+		thread.Start ();
+	}
 
-        public byte[] GetBuffer(int size) {
-            for (int i = 0; i < buffers.Length; i++) { 
-                
-            }
+	public void Stop()
+	{
+		if (!isRunning) {
+			return;
+		}
 
-            return null;
-        }
+		thread.Join ();
+		isRunning = false;
+	}
 
-        public void ReturnBuffer(byte[] bytes) {
-            
-        }
-    }
+	private void ThreadLogic()
+	{
+		while (isRunning)
+		{
+			callBack();
+			Thread.Sleep(sleepTime);
+		}
+	}
 }
-
-

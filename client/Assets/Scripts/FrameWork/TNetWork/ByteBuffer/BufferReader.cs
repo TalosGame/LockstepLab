@@ -1,6 +1,6 @@
 ﻿//
-// Class:	NetThread.cs
-// Date:	2017/11/13 23:33
+// Class:	BufferReader.cs
+// Date:	12/20/2017 5:27:09 PM
 // Author: 	Miller
 // Email:	wangquan <wangquancomi@gmail.com>
 // QQ:		408310416
@@ -28,54 +28,45 @@
 // THE SOFTWARE.
 
 using System;
-using System.Threading;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
-public class ThreadEx
-{
-	private Thread thread;
-	private bool isRunning;
+namespace TG.Net {
+    public unsafe partial class ByteBuffer : IDisposable {
 
-	private string name;
-	private int sleepTime;
-	private Action callBack;
+        public int ReadInt() {
+            int size = sizeof(int);
 
-	public ThreadEx(string name, int sleepTime, Action callBack){
-		this.name = name;
-		this.sleepTime = sleepTime;
-		this.callBack = callBack;
-	}
+            IntPtr nPtr = Marshal.AllocHGlobal(size);
 
-	public void Start(){
-		if (isRunning) {
-			return;
-		}
+//             int readNum = 0;
+//             do
+//             {
+//             
+//             }
 
-		isRunning = true;
+            Marshal.FreeHGlobal(nPtr);
 
-		thread = new Thread (ThreadLogic);
-		thread.Name = name;
-		thread.IsBackground = true;
-		thread.Start ();
-	}
+//             Position pos = CountReadPos();
+//             ArraySegment<byte> curSegment = buffers[pos.index];
+//             int ret = BitConverter.ToInt32(curSegment.Array, pos.offset);
+            return 0;
+        }
 
-	public void Stop()
-	{
-		if (!isRunning) {
-			return;
-		}
+        public short ReadShort() { 
+            return 0;
+        }
 
-		thread.Abort ();
-		thread.Join ();
+        public byte ReadByte() {
+            return 0;
+        }
 
-		isRunning = false;
-	}
+        public byte[] ReadBytes(int size) {
 
-	private void ThreadLogic()
-	{
-		while (isRunning)
-		{
-			callBack();
-			Thread.Sleep(sleepTime);
-		}
-	}
+
+
+            return null;
+        }
+    }
 }
+
