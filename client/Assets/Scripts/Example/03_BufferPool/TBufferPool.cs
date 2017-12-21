@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -36,19 +37,11 @@ public class TBufferPool : MonoBehaviour {
 //			Debug.Log ("len:" + buf.Array.Length + " offset:" + buf.Offset + " count:" + buf.Count);
 //		}
 
-// 		byte[] bytes = new byte[]{ 1, 2, 3, 4, 5 };
+		TextAsset asset = Resources.Load<TextAsset>("Meta/Config/ByteBuffer");
+		string json = asset.text;
 
-		//			{ 256, 32 },
-		//			{ 512, 64 },
-		//			{ 1024, 8 },
-		//			{ 4096, 2 }
-
-		List<BufferConfig> configs = new List<BufferConfig> ();
-		configs.Add (new BufferConfig (256, 32));
-		configs.Add (new BufferConfig (512, 64));
-		configs.Add (new BufferConfig (1024, 8));
-		configs.Add (new BufferConfig (4096, 2));
-		BufferPool.Instance.CreateSegments (configs);
+		BufferConfig config = JsonUtility.FromJson<BufferConfig> (json);
+		BufferPool.Instance.CreateSegments (config);
 
 		ByteBuffer byteBuf = new ByteBuffer(100);
 		byteBuf.WriteInt(500);
@@ -61,13 +54,8 @@ public class TBufferPool : MonoBehaviour {
 
         byteBuf.Dispose ();
 
-        //int ret = byteBuf.ReadInt();
-        //byte []bytes = byteBuf.ToBytes();
-        int i = 0;
-        i++;
-
-// 		int j = 0;
-// 		j++;
+ 		int j = 0;
+ 		j++;
 // 
 //         int maxArrayLength = 1024 * 1024;
 //         const int MinimumArrayLength = 0x10, MaximumArrayLength = 0x40000000;

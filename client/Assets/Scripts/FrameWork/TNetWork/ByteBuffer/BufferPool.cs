@@ -33,14 +33,29 @@ using TG.ThreadX;
 
 namespace TG.Net {
 
-	public struct BufferConfig
+	[Serializable]
+	public class BufferInfo
 	{
 		public int chunkSize;
 		public int capacity;
 
-		public BufferConfig(int chunkSize, int capacity){
+		public BufferInfo(int chunkSize, int capacity){
 			this.chunkSize = chunkSize;
 			this.capacity = capacity;
+		}
+	}
+
+	[Serializable]
+	public class BufferConfig
+	{
+		public List<BufferInfo> bufferConfigs;
+
+		public BufferConfig(){
+			bufferConfigs = new List<BufferInfo> ();
+		}
+
+		public void AddBuffer(BufferInfo info){
+			bufferConfigs.Add (info);
 		}
 	}
 
@@ -91,10 +106,15 @@ namespace TG.Net {
 			}
 		}
 
-		public void CreateSegments(List<BufferConfig> configs){
-			for (int i = 0; i < configs.Count; i++) {
-				BufferConfig config = configs [i];
-				CreateSegment (config.capacity, config.chunkSize);
+		public void CreateSegments(BufferConfig config){
+			List<BufferInfo> infos = config.bufferConfigs;
+			if (infos == null) {
+				return;
+			}
+
+			for (int i = 0; i < infos.Count; i++) {
+				BufferInfo info = infos [i];
+				CreateSegment (info.capacity, info.chunkSize);
 			}
 		}
 
