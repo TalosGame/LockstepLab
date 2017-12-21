@@ -31,102 +31,77 @@ using System;
 using System.Collections.Generic;
 
 namespace TG.Net {
-    public unsafe partial class ByteBuffer {
-        struct Position {
-            public readonly int index;
-            public readonly int offset;
+    public partial class ByteBuffer {
+		private readonly int chunkSize;
 
-            public Position(int index, int offset) {
-                this.index = index;
-                this.offset = offset;
-            }
-        }
-
-        private readonly BufferPool pool;
-        private readonly int bufferSize;
-
-        private List<ArraySegment<byte>> buffers;
+		private byte[] buffer;
+		public byte[] Buffers{
+			get{
+				return buffer;
+			}
+		}
 
         private int writeIndex;
         private int readIndex;
-
         private bool dispose;
 
-        public ByteBuffer(BufferPool pool) : this(1, pool) {
-        }
+		public ByteBuffer(int size){
 
-        public ByteBuffer(int bufferCount, BufferPool pool) {
-            if (bufferCount <= 0) {
-                throw new ArgumentException("bufferCount");
-            }
+			if (size <= 0) {
+				throw new ArgumentException("size");
+			}
 
-            if (pool == null) {
-                throw new ArgumentException("pool");
-            }
+			this.chunkSize = size;
+			this.writeIndex = 0;
+			this.readIndex = 0;
+			this.dispose = false;
 
-            this.buffers = new List<ArraySegment<byte>>(pool.ObtainSegments(bufferCount));
-            this.bufferSize = buffers[0].Count;
-            this.pool = pool;
-            this.writeIndex = 0;
-            this.readIndex = 0;
-            this.dispose = false;
-        }
+			this.buffer = BufferPool.Instance.GetBuffer (size);
+		}
 
-        public ByteBuffer(byte[] bytes, BufferPool pool) {
-            if (bytes == null || bytes.Length <= 0) {
-                throw new ArgumentException("bytes");
-            }
-
-            if (pool == null) {
-                throw new ArgumentException("pool");
-            }
-
-            // Create first default buffer
-            this.buffers = new List<ArraySegment<byte>>(pool.ObtainSegments(1));
-            this.bufferSize = buffers[0].Count;
-            this.pool = pool;
-            this.readIndex = 0;
-            this.dispose = false;
-
-            CheckBuffer(bytes.Length);
-
-            WriteBytes(bytes);
-        }
+//        public ByteBuffer(byte[] bytes) {
+//            if (bytes == null || bytes.Length <= 0) {
+//                throw new ArgumentException("bytes");
+//            }
+//
+//            if (pool == null) {
+//                throw new ArgumentException("pool");
+//            }
+//
+//            // Create first default buffer
+//            this.buffers = new List<ArraySegment<byte>>(pool.ObtainSegments(1));
+//            this.bufferSize = buffers[0].Count;
+//            this.pool = pool;
+//            this.readIndex = 0;
+//            this.dispose = false;
+//
+//            CheckBuffer(bytes.Length);
+//
+//            WriteBytes(bytes);
+//        }
 
         public void Dispose() {
-            pool.RecycleSegments(buffers);
+			BufferPool.Instance.ReturnBuffer(buffer);
             dispose = true;
-            buffers = null;
+			buffer = null;
         }
 
-        private Position CountWritePos() {
-            return CountPosition(writeIndex);
-        }
+		public int GetWriteIdx(){
+			return writeIndex % chunkSize;
+		}
 
-        private Position CountReadPos() {
-            return CountPosition(readIndex);
-        }
+		public int GetReadIdx(){
+			return readIndex % chunkSize;
+		}
 
-        private Position CountPosition(int index) {
-            Position ret = new Position(index / bufferSize, index % bufferSize);
-            return ret;
-        }
+		private void CheckBuffer() {
+			if (writeIndex >= chunkSize) {
+				throw new Exception("Write buffer exception!");
+			}
 
-        private void CheckBuffer(int nbNum) {
-            int needCnt = (writeIndex + nbNum) / bufferSize;
-            if (needCnt < buffers.Count) {
-                return;
-            }
-
-            int count = needCnt - buffers.Count + 1;
-            if (count <= 0) {
-                throw new ArgumentOutOfRangeException("Check Buffer Count!");
-            }
-
-            ArraySegment<byte>[] segments = pool.ObtainSegments(count);
-            for (int i = 0; i < segments.Length; i++) {
-                buffers.Add(segments[i]);
-            }
+			if (readIndex > writeIndex) {
+				throw new Exception("Read buffer exception!");
+			}
         }
     }
 }

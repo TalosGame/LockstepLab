@@ -32,7 +32,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace TG.Net {
-    public unsafe partial class ByteBuffer : IDisposable {
+    public partial class ByteBuffer : IDisposable {
 
         public int ReadInt() {
             int size = sizeof(int);

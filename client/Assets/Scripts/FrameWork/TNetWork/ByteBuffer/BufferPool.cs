@@ -29,43 +29,108 @@
 
 using System;
 using System.Collections.Generic;
+using TG.ThreadX;
 
 namespace TG.Net {
 
-    public class BufferPool1 {
+	public struct BufferConfig
+	{
+		public int chunkSize;
+		public int capacity;
 
-        //class 
-        private int _chunkNum;
-        public int ChunkNum {
-            get { return _chunkNum; }
-            set { _chunkNum = value; }
-        }
+		public BufferConfig(int chunkSize, int capacity){
+			this.chunkSize = chunkSize;
+			this.capacity = capacity;
+		}
+	}
 
-        private readonly int chunkSize;
-        public byte[][] buffers;
+	public class BufferPool : SingletonBase<BufferPool> {
 
-        public BufferPool1(int chunkNum, int chunkSize)
-        {
-            this._chunkNum = chunkNum;
-            this.chunkSize = chunkSize;
-            this.buffers = new byte[chunkNum][];
+		private List<BufferSegment> segments = new List<BufferSegment> ();
+		private List<int> chunkSizes = new List<int> ();
 
-            for (int i = 0; i < chunkNum; i++) {
-                this.buffers[i] = new byte[chunkSize];
-            }
-        }
+		class BufferSegment{
+			public byte[][] buffers;
 
-        public byte[] GetBuffer(int size) {
-            for (int i = 0; i < buffers.Length; i++) { 
-                
-            }
+			public readonly int chunkSize;
+			public readonly int capacity;
 
-            return null;
-        }
+			private int chunkNum;
+			private SpinLock spinLock = new SpinLock (10);
 
-        public void ReturnBuffer(byte[] bytes) {
-            
-        }
+			public BufferSegment(int capacity, int chunkSize){
+				this.capacity = capacity;
+				this.chunkSize = chunkSize;
+				this.chunkNum = capacity;
+
+				this.buffers = new byte[capacity][];
+				for (int i = 0; i < capacity; i++) {
+					this.buffers[i] = new byte[chunkSize];
+				}
+			}
+
+			public byte[] GetBuffer(){
+				if (chunkNum < 0) {
+					return new byte[chunkSize];
+				}
+
+				spinLock.Enter ();
+				var p = buffers[--chunkNum];
+				buffers[chunkNum] = null;
+				spinLock.Exit ();
+				return p;
+			}
+
+			public void ReturnBuffer(byte []bytes){
+
+				if (chunkNum >= capacity) return;
+
+				spinLock.Enter ();
+				buffers[chunkNum++] = bytes;
+				spinLock.Exit ();
+			}
+		}
+
+		public void CreateSegments(List<BufferConfig> configs){
+			for (int i = 0; i < configs.Count; i++) {
+				BufferConfig config = configs [i];
+				CreateSegment (config.capacity, config.chunkSize);
+			}
+		}
+
+		public void CreateSegment(int chunkSize, int capacity){
+			if (chunkSizes.Contains (chunkSize)) {
+				return;
+			}
+
+			chunkSizes.Add (chunkSize);
+
+			BufferSegment segment = new BufferSegment (chunkSize, capacity);
+			segments.Add (segment);
+		}
+
+		public byte[] GetBuffer(int size){
+			for(int i = 0; i < segments.Count; i++){
+				var segment = segments[i];
+				if(size <= segment.chunkSize){
+					return segment.GetBuffer ();
+				}
+			}
+
+			// buffer cache miss, keep program running 
+			return new byte[size];
+		}
+
+		public void ReturnBuffer(byte[] bytes){
+			int size = bytes.Length;
+			for (int i = 0; i < segments.Count; ++i){
+				var segment = segments[i];
+				if (size == segment.chunkSize){
+					segment.ReturnBuffer (bytes);
+					break;
+				}
+			}
+		}
     }
 }
 

@@ -32,7 +32,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-
+/*
 namespace TG.Net
 {
 	public class BufferPool
@@ -177,6 +177,7 @@ namespace TG.Net
 		}
 	}
 }
+*/
 
 /*
 class BufferInfo

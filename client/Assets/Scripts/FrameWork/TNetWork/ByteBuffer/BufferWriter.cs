@@ -32,108 +32,111 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
 namespace TG.Net {
-    public unsafe partial class ByteBuffer : IDisposable {
+	public class ByteBuffer : IDisposable {
 
         public void WriteInt(int val) {
-            byte* ptrVal = (byte*)&val;
-            Write(ptrVal, sizeof(int));
+			Write(GetWriteIdx(), val);
+			writeIndex += 4;
         }
 
         public void WriteShort(short val) {
-            byte* ptrVal = (byte*)&val;
-            Write(ptrVal, sizeof(short));
+			Write(GetWriteIdx(), val);
+			writeIndex += 2;
         }
 
         public void WriteByte(byte val) {
-            byte* ptrVal = (byte*)&val;
-            Write(ptrVal, sizeof(byte));
+			buffer[writeIndex] = val;
+			writeIndex++;
         }
 
-        public void WriteBytes(byte[] bytes) {
-            WriteBytes(bytes, 0, bytes.Length);
+		public void WriteBytes(byte[] bytes) {
+			Buffer.BlockCopy (bytes, 0, buffer, writeIndex, bytes.Length);
+			writeIndex += bytes.Length;
         }
 
-        public void WriteBytes(byte[] bytes, int offset, int count) {
-            if (bytes == null)
-                throw new ArgumentNullException("data");
-            if (offset < 0 || offset > bytes.Length)
-                throw new ArgumentOutOfRangeException("offset");
-            if (count < 0 || count + offset > bytes.Length)
-                throw new ArgumentOutOfRangeException("count");
+//        public void WriteBytes(byte[] bytes, int offset, int count) {
+//            if (bytes == null)
+//                throw new ArgumentNullException("data");
+//            if (offset < 0 || offset > bytes.Length)
+//                throw new ArgumentOutOfRangeException("offset");
+//            if (count < 0 || count + offset > bytes.Length)
+//                throw new ArgumentOutOfRangeException("count");
+//
+//            Write(new ArraySegment<byte>(bytes, offset, count));
+//        }
 
-            Write(new ArraySegment<byte>(bytes, offset, count));
-        }
+//        private void Write(byte* srcPtr, int size) {
+//            CheckBuffer(size);
+//
+//            int writeNum = 0;
+//            do {
+//                Position pos = CountWritePos();
+//                ArraySegment<byte> curSegment = buffers[pos.index];
+//
+//                int canWrite = size - writeNum;
+//                int leftBytes = curSegment.Count - pos.offset;
+//                canWrite = canWrite > leftBytes ? leftBytes : canWrite;
+//
+//                fixed (byte* ptrDst = curSegment.Array) {
+//                    int idx = 0;
+//                    while (idx < canWrite) {
+//                        int dstOffset = curSegment.Offset + pos.offset;
+//                        int ptrOffset = writeNum + idx;
+//                        *(ptrDst + dstOffset + ptrOffset) = *(srcPtr + ptrOffset);
+//                        idx++;
+//                    }
+//                }
+//
+//                writeNum += canWrite;
+//                writeIndex += canWrite;
+//
+//            } while (writeNum < size);
+//        }
+//
+//        private void Write(ArraySegment<byte> segment) {
+//            CheckBuffer(segment.Count);
+//
+//            int writeNum = 0;
+//            do {
+//                Position pos = CountWritePos();
+//                ArraySegment<byte> curSegment = buffers[pos.index];
+//
+//                int canWrite = segment.Count - writeNum;
+//                int leftBytes = curSegment.Count - pos.offset;
+//                canWrite = canWrite > leftBytes ? leftBytes : canWrite;
+//
+//                Buffer.BlockCopy(segment.Array, segment.Offset + writeNum, curSegment.Array, curSegment.Offset + pos.offset, canWrite);
+//
+//                writeNum += canWrite;
+//                writeIndex += canWrite;
+//            } while (writeNum < segment.Count);
+//        }
 
-        private void Write(byte* srcPtr, int size) {
-            CheckBuffer(size);
+		private void Write(int offset, int data)
+		{
+#if BIGENDIAN
+			buffer[offset + 3] = (byte)(data);
+			buffer[offset + 2] = (byte)(data >> 8);
+			buffer[offset + 1] = (byte)(data >> 16);
+			buffer[offset    ] = (byte)(data >> 24);
+#else
+			buffer[offset] = (byte)(data);
+			buffer[offset + 1] = (byte)(data >> 8);
+			buffer[offset + 2] = (byte)(data >> 16);
+			buffer[offset + 3] = (byte)(data >> 24);
+#endif
+		}
 
-            int writeNum = 0;
-            do {
-                Position pos = CountWritePos();
-                ArraySegment<byte> curSegment = buffers[pos.index];
-
-                int canWrite = size - writeNum;
-                int leftBytes = curSegment.Count - pos.offset;
-                canWrite = canWrite > leftBytes ? leftBytes : canWrite;
-
-                fixed (byte* ptrDst = curSegment.Array) {
-                    int idx = 0;
-                    while (idx < canWrite) {
-                        int dstOffset = curSegment.Offset + pos.offset;
-                        int ptrOffset = writeNum + idx;
-                        *(ptrDst + dstOffset + ptrOffset) = *(srcPtr + ptrOffset);
-                        idx++;
-                    }
-                }
-
-                writeNum += canWrite;
-                writeIndex += canWrite;
-
-            } while (writeNum < size);
-        }
-
-        private void Write(ArraySegment<byte> segment) {
-            CheckBuffer(segment.Count);
-
-            int writeNum = 0;
-            do {
-                Position pos = CountWritePos();
-                ArraySegment<byte> curSegment = buffers[pos.index];
-
-                int canWrite = segment.Count - writeNum;
-                int leftBytes = curSegment.Count - pos.offset;
-                canWrite = canWrite > leftBytes ? leftBytes : canWrite;
-
-                Buffer.BlockCopy(segment.Array, segment.Offset + writeNum, curSegment.Array, curSegment.Offset + pos.offset, canWrite);
-
-                writeNum += canWrite;
-                writeIndex += canWrite;
-            } while (writeNum < segment.Count);
-        }
-
-        /// <summary>
-        /// TODO: Can make less gc alloc here?
-        /// </summary>
-        /// <returns></returns>
-        public byte[] ToBytes() {
-            byte[] ret = new byte[writeIndex];
-            Position pos = CountWritePos();
-
-            int offset = 0;
-            int writeNum = writeIndex;
-            for (int i = 0; i < pos.index + 1; i++) {
-                ArraySegment<byte> curSegment = buffers[i];
-
-                int canWrite = writeNum < curSegment.Count ? writeNum : curSegment.Count;
-                Buffer.BlockCopy(curSegment.Array, curSegment.Offset, ret, offset, canWrite);
-
-                // left write bytes
-                writeNum -= canWrite;
-                offset += canWrite;
-            }
-
-            return ret;
-        }
+		public void Write(int offset, short data)
+		{
+#if BIGENDIAN
+			buffer[offset + 1] = (byte)(data);
+			buffer[offset    ] = (byte)(data >> 8);
+			#else
+			buffer[offset] = (byte)(data);
+			buffer[offset + 1] = (byte)(data >> 8);
+#endif
+		}
     }
 }
 

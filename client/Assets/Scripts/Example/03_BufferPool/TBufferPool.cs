@@ -37,15 +37,28 @@ public class TBufferPool : MonoBehaviour {
 //		}
 
 // 		byte[] bytes = new byte[]{ 1, 2, 3, 4, 5 };
-// 
-		ByteBuffer byteBuf = new ByteBuffer(1, BufferPool.DefaultPool);
-		//byteBuf.WriteBytes (bytes);
+
+		//			{ 256, 32 },
+		//			{ 512, 64 },
+		//			{ 1024, 8 },
+		//			{ 4096, 2 }
+
+		List<BufferConfig> configs = new List<BufferConfig> ();
+		configs.Add (new BufferConfig (256, 32));
+		configs.Add (new BufferConfig (512, 64));
+		configs.Add (new BufferConfig (1024, 8));
+		configs.Add (new BufferConfig (4096, 2));
+		BufferPool.Instance.CreateSegments (configs);
+
+		ByteBuffer byteBuf = new ByteBuffer(100);
 		byteBuf.WriteInt(500);
 		byteBuf.WriteShort(500);
 		byteBuf.WriteByte(1);
 
-        int ret = byteBuf.ReadInt();
+		byte []bytes = byteBuf.Buffers;
+		byteBuf.Dispose ();
 
+        //int ret = byteBuf.ReadInt();
         //byte []bytes = byteBuf.ToBytes();
         int i = 0;
         i++;
