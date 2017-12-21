@@ -34,38 +34,41 @@ using System.Runtime.InteropServices;
 namespace TG.Net {
     public partial class ByteBuffer : IDisposable {
 
-        public int ReadInt() {
-            int size = sizeof(int);
-
-            IntPtr nPtr = Marshal.AllocHGlobal(size);
-
-//             int readNum = 0;
-//             do
-//             {
-//             
-//             }
-
-            Marshal.FreeHGlobal(nPtr);
-
-//             Position pos = CountReadPos();
-//             ArraySegment<byte> curSegment = buffers[pos.index];
-//             int ret = BitConverter.ToInt32(curSegment.Array, pos.offset);
-            return 0;
+        public int AvailableBytes {
+            get { return chunkSize - ReadIndex; }
         }
 
-        public short ReadShort() { 
-            return 0;
+        public int ReadInt() {
+            int ret = BitConverter.ToInt32(buffer, ReadIndex);
+            ReadIndex += 4;
+            return ret;
+        }
+
+        public short ReadShort() {
+            short ret = BitConverter.ToInt16(buffer, ReadIndex);
+            ReadIndex += 2;
+            return ret;
         }
 
         public byte ReadByte() {
-            return 0;
+            return buffer[ReadIndex++];
         }
 
-        public byte[] ReadBytes(int size) {
+        public byte[] ReadBytes() {
+            byte[] ret = new byte[AvailableBytes];
+            Buffer.BlockCopy(buffer, ReadIndex, ret, 0, AvailableBytes);
+            ReadIndex = chunkSize;
+            return ret;
+        }
 
+        public void GetRemainingBytes(byte[] destination) {
+            Buffer.BlockCopy(buffer, ReadIndex, destination, 0, AvailableBytes);
+            ReadIndex = chunkSize;
+        }
 
-
-            return null;
+        public void GetBytes(byte[] destination, int lenght) {
+            Buffer.BlockCopy(buffer, ReadIndex, destination, 0, lenght);
+            ReadIndex += lenght;
         }
     }
 }

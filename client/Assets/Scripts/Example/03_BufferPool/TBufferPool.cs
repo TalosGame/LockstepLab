@@ -55,8 +55,11 @@ public class TBufferPool : MonoBehaviour {
 		byteBuf.WriteShort(500);
 		byteBuf.WriteByte(1);
 
-		byte []bytes = byteBuf.Buffers;
-		byteBuf.Dispose ();
+        var ret = byteBuf.ReadInt();
+        ret = byteBuf.ReadShort();
+        ret = byteBuf.ReadByte();
+
+        byteBuf.Dispose ();
 
         //int ret = byteBuf.ReadInt();
         //byte []bytes = byteBuf.ToBytes();

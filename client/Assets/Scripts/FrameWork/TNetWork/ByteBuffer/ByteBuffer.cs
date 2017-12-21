@@ -42,7 +42,17 @@ namespace TG.Net {
 		}
 
         private int writeIndex;
+        public int WriteIndex {
+            get { return writeIndex; }
+            set { writeIndex = value; }
+        }
+
         private int readIndex;
+        public int ReadIndex {
+            get { return readIndex; }
+            set { readIndex = value; }
+        }
+
         private bool dispose;
 
 		public ByteBuffer(int size){
@@ -51,34 +61,27 @@ namespace TG.Net {
 				throw new ArgumentException("size");
 			}
 
-			this.chunkSize = size;
-			this.writeIndex = 0;
-			this.readIndex = 0;
+			this.WriteIndex = 0;
+			this.ReadIndex = 0;
 			this.dispose = false;
 
 			this.buffer = BufferPool.Instance.GetBuffer (size);
+            this.chunkSize = this.buffer.Length;
 		}
 
-//        public ByteBuffer(byte[] bytes) {
-//            if (bytes == null || bytes.Length <= 0) {
-//                throw new ArgumentException("bytes");
-//            }
-//
-//            if (pool == null) {
-//                throw new ArgumentException("pool");
-//            }
-//
-//            // Create first default buffer
-//            this.buffers = new List<ArraySegment<byte>>(pool.ObtainSegments(1));
-//            this.bufferSize = buffers[0].Count;
-//            this.pool = pool;
-//            this.readIndex = 0;
-//            this.dispose = false;
-//
-//            CheckBuffer(bytes.Length);
-//
-//            WriteBytes(bytes);
-//        }
+        public ByteBuffer(byte[] bytes) {
+            if (bytes == null || bytes.Length <= 0) {
+                throw new ArgumentException("bytes");
+            }
+
+            this.ReadIndex = 0;
+            this.dispose = false;
+
+            this.buffer = BufferPool.Instance.GetBuffer(bytes.Length);
+            this.chunkSize = this.buffer.Length;
+
+            WriteBytes(bytes);
+        }
 
         public void Dispose() {
 			BufferPool.Instance.ReturnBuffer(buffer);
@@ -86,20 +89,12 @@ namespace TG.Net {
 			buffer = null;
         }
 
-		public int GetWriteIdx(){
-			return writeIndex % chunkSize;
-		}
-
-		public int GetReadIdx(){
-			return readIndex % chunkSize;
-		}
-
 		private void CheckBuffer() {
-			if (writeIndex >= chunkSize) {
+			if (WriteIndex >= chunkSize) {
 				throw new Exception("Write buffer exception!");
 			}
 
-			if (readIndex > writeIndex) {
+			if (ReadIndex > WriteIndex) {
 				throw new Exception("Read buffer exception!");
 			}
         }
