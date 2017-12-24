@@ -6,74 +6,59 @@ using System.Collections.Generic;
 using System.Threading;
 using TG.Net;
 
-
 public class TBufferPool : MonoBehaviour {
 
-	//private LockFreeStack<ArraySegment<byte>> _buffers = new LockFreeStack<ArraySegment<byte>> (); 
-
-	private BufferPool pool;
+	Dictionary<int, string> dic;
 
 	void Start () {
-//		byte[] bytes = new byte[1024 * 1024];
+//		TextAsset asset = Resources.Load<TextAsset>("Meta/Config/ByteBuffer");
+//		string json = asset.text;
 //
-//		for (int i = 0; i < 1; i++){
-//			var chunk = new ArraySegment<byte>(bytes, i * 1024, 1024);
-//			_buffers.Push(chunk);
+//		BufferConfig config = JsonUtility.FromJson<BufferConfig> (json);
+//		BufferPool.Instance.CreateSegments (config);
+//
+//		ByteBuffer byteBuf = new ByteBuffer(100);
+//		byteBuf.WriteInt(500);
+//		byteBuf.WriteShort(500);
+//		byteBuf.WriteByte(1);
+//
+//        var ret = byteBuf.ReadInt();
+//        ret = byteBuf.ReadShort();
+//        ret = byteBuf.ReadByte();
+//
+//        byteBuf.Dispose ();
+
+//		byte[] data = new byte[2];
+//		for(int i = 1; i < data.Length; i++){
+//			data[i] = 0xF;
 //		}
 //
-//		int cnt = _buffers.count;
-//		Debug.Log ("buffer cnt:" + cnt);
-//
-//		ArraySegment<byte> segment = _buffers.Pop ();
-//		segment = _buffers.Pop ();
-//
-//		if (segment == default(ArraySegment<byte>)) {
-//			int i = 0;
-//			i++;
-//		}
+//		short sequence = BitConverter.ToInt16 (data, 1);
 
-//		var result = GetBuffs ();
-//		foreach (ArraySegment<byte> buf in segment) {
-//			Debug.Log ("len:" + buf.Array.Length + " offset:" + buf.Offset + " count:" + buf.Count);
-//		}
+//		ushort head = 0xffff;
+//		head = (ushort)(head & 0x7fff);
+//		int j = 0;
+//		j++;
 
-		TextAsset asset = Resources.Load<TextAsset>("Meta/Config/ByteBuffer");
-		string json = asset.text;
+		UDPNetPacket packet = new UDPNetPacket (20);
+		//packet.head = 
+//		packet.Property = PacketProperty.AckReliable;
+//		
 
-		BufferConfig config = JsonUtility.FromJson<BufferConfig> (json);
-		BufferPool.Instance.CreateSegments (config);
+		packet.IsFragment = true;
+		packet.Property = PacketProperty.AckReliable;
+		packet.Sequence = 1000;
 
-		ByteBuffer byteBuf = new ByteBuffer(100);
-		byteBuf.WriteInt(500);
-		byteBuf.WriteShort(500);
-		byteBuf.WriteByte(1);
+		bool IsFragment = packet.IsFragment;
+		PacketProperty property = packet.Property;
+		int sequence = packet.Sequence;
 
-        var ret = byteBuf.ReadInt();
-        ret = byteBuf.ReadShort();
-        ret = byteBuf.ReadByte();
-
-        byteBuf.Dispose ();
-
- 		int j = 0;
- 		j++;
-// 
-//         int maxArrayLength = 1024 * 1024;
-//         const int MinimumArrayLength = 0x10, MaximumArrayLength = 0x40000000;
-//         if (maxArrayLength > MaximumArrayLength)
-//         {
-//             maxArrayLength = MaximumArrayLength;
-//         }
-//         else if (maxArrayLength < MinimumArrayLength)
-//         {
-//             maxArrayLength = MinimumArrayLength;
-//         }
-// 
-//         int ret = SelectBucketIndex(maxArrayLength);
-//         Debug.Log("bucket index==" + ret);
-
-
-		//var segments = new ArraySegment<byte>[2];
+		int i = 0;
+		i++;
 	}
+
+
+
 
 //	private IEnumerable<ArraySegment<byte>> GetBuffs()
 //	{

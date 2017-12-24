@@ -36,13 +36,14 @@ namespace TG.Net
 {
 	public class UDPSocket : SocketBase
 	{
-        private Queue<NetPackage> buffers = new Queue<NetPackage>();
+        private Queue<NetPacket> buffers = new Queue<NetPacket>();
 
-		public UDPSocket(SocketManager socketMgr, NetEventListener listener) : base(socketMgr, listener){
+		public UDPSocket(SocketManager socketMgr, OnMessageReceived messageReceived) 
+			: base(socketMgr, messageReceived){
 			NetType = TNetType.UDP;
 		}
 
-		protected override void Connect (){
+		protected override void OnConnect (){
 			this.socket = new Socket (IPEndPoint.GetAddressFamily(), SocketType.Dgram, ProtocolType.Udp);
 		}
 
@@ -55,6 +56,11 @@ namespace TG.Net
 			}catch(SocketException ex){
 
 			}
+		}
+
+		protected override void ReceiveMessage ()
+		{
+			
 		}
 	}
 }

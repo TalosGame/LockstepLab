@@ -32,12 +32,17 @@ namespace TG.Net
 {
 	public class TCPSocket : SocketBase
 	{
-		public TCPSocket(SocketManager socketMgr, NetEventListener listener) : base(socketMgr, listener)
-		{
+		public TCPSocket(SocketManager socketMgr, OnMessageReceived messageReceived) 
+			: base(socketMgr, messageReceived){
 			NetType = TNetType.TCP;
 		}
 
 		public override void SendTo (byte[] bytes)
+		{
+			
+		}
+
+		protected override void ReceiveMessage ()
 		{
 			
 		}

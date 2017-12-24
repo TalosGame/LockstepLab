@@ -32,7 +32,7 @@ using System;
 namespace TG.Net
 {
 	#region net delegate
-	delegate void OnMessageReceived(byte[] data, int length, int errorCode, NetIPEndPoint remoteEndPoint);
+	public delegate void OnMessageReceived(byte[] data, int length, int errorCode, NetIPEndPoint remoteEndPoint);
 
 	delegate void OnConncect();
 
@@ -88,11 +88,18 @@ namespace TG.Net
 		public const string POOL_NET_EVENT = "NetEvent";
 		public const string POOL_NET_PACKAGE = "NetPackage";
 
-        #region udp const
-        // 这里可以根据需求自己调整
+		// 这里可以根据需求自己调整
 		public const int SLIDING_WINDOW = 64;
 
-		public const int MAX_MTU = 512;
+		// 最合适的mtu大小，避免分片
+		public static readonly int[] POSSIBLE_MTU_SIZE =
+		{
+			1452, // tcp
+			512,  // udp
+		};
+
+        #region udp const
+        
 
         #endregion
 

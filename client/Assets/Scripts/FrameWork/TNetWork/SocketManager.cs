@@ -33,6 +33,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+using TG.ThreadX;
 
 namespace TG.Net
 {
@@ -47,26 +48,40 @@ namespace TG.Net
 
 		public void Init(NetEventListener listener){
 			InitPools ();
-
 			this.listener = listener;
 		}
 
 		private void InitPools(){
 			poolMgr = MLPoolManager.Instance;
 			poolMgr.CreatePool<MLObjectPool<NetEvent>, NetEvent>(preloadAmount:50, isLimit:false);
-			poolMgr.CreatePool<MLObjectPool<NetPackage>, NetPackage>(preloadAmount:50, isLimit:false);
+			poolMgr.CreatePool<MLObjectPool<NetPacket>, NetPacket>(preloadAmount:50, isLimit:false);
+		}
+
+		private void InitBufferPool(){
+			TextAsset asset = Resources.Load<TextAsset>("Meta/Config/ByteBuffer");
+			string json = asset.text;
+			
+			BufferConfig config = JsonUtility.FromJson<BufferConfig> (json);
+			BufferPool.Instance.CreateSegments (config);
+		}
+
+		public void Close(){
+			if (socket != null) {
+				socket.Close ();
+				socket = null;	
+			}
 		}
 
 		public void CreateSocket(TNetType type){
 			switch (type) {
 			case TNetType.TCP:
-				socket = new TCPSocket(this, listener);
+				socket = new TCPSocket(this, OnMessageReceived);
 				break;
 			case TNetType.UDP:
-				socket = new UDPSocket(this, listener);
+				socket = new UDPSocket(this, OnMessageReceived);
 				break;
 			case TNetType.ROUDP:
-				socket = new RUDPSocket (this, listener);
+				socket = new RUDPSocket (this, OnMessageReceived);
 				break;
             default:
                 Debug.LogError("Unknown socket type. Create error!");
@@ -85,6 +100,10 @@ namespace TG.Net
 		public void SendMessage(string str){
 			byte[] bytes = UTF8Encoding.Default.GetBytes (str);
 			socket.SendTo (bytes);
+		}
+
+		public void SendBytes(){
+			
 		}
 
 		#region net event
@@ -118,6 +137,12 @@ namespace TG.Net
 				
 				break;
 			}
+		}
+		#endregion
+
+		#region received logic
+		public void OnMessageReceived(byte[] data, int length, int errorCode, NetIPEndPoint remoteEndPoint){
+			
 		}
 		#endregion
 	}

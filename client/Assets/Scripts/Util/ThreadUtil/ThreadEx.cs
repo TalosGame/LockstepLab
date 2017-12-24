@@ -33,7 +33,11 @@ using System.Threading;
 namespace TG.ThreadX {
     public class ThreadEx {
         private Thread thread;
+
         private bool isRunning;
+		public bool IsRunning {
+			get { return isRunning; }
+		}
 
         private string name;
         private int sleepTime;
@@ -55,7 +59,7 @@ namespace TG.ThreadX {
             thread = new Thread(ThreadLogic);
             thread.Name = name;
             thread.IsBackground = true;
-            thread.Start();
+			thread.Start();
         }
 
         public void Stop() {
@@ -70,7 +74,9 @@ namespace TG.ThreadX {
         private void ThreadLogic() {
             while (isRunning) {
                 callBack();
-                Thread.Sleep(sleepTime);
+
+				if(sleepTime > 0)
+                	Thread.Sleep(sleepTime);
             }
         }
     }

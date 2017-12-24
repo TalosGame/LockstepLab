@@ -1,6 +1,6 @@
 ﻿//
-// Class:	SRUSocket.cs
-// Date:	2017/12/9 12:06
+// Class:	SocketCollection.cs
+// Date:	2017/12/23 18:34
 // Author: 	Miller
 // Email:	wangquan <wangquancomi@gmail.com>
 // QQ:		408310416
@@ -29,54 +29,62 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
-using UnityEngine;
 
 namespace TG.Net
 {
-	public class RUDPSocket : SocketBase
+	public class SocketCollection
 	{
-		private const int RUDP_MTU_IDX = 1;
-		private readonly int mtu = 0;
+		private Dictionary<NetIPEndPoint, SocketBase> socketDic;
+		private List<SocketBase> socketArrays;
+		private int count;
 
-		private Queue<NetPacket> sendingPackages = new Queue<NetPacket> ();
-		private Queue<NetPacket> pendingPackages = new Queue<NetPacket>();
-
-		private int localSeqence;
-		private int remoteSequence;
-		private int localWindowStart;
-		private int remoteWindowStart;
-
-		private readonly NetPacket[] receivedPackets;
-
-		private ByteBuffer byteBuffer;
-
-		public RUDPSocket(SocketManager socketMgr, OnMessageReceived messageReceived) 
-			: base(socketMgr, messageReceived){
-
-			this.NetType = TNetType.ROUDP;
-			this.receivedPackets = new NetPacket[NetConst.SLIDING_WINDOW];
-			this.mtu = NetConst.POSSIBLE_MTU_SIZE [RUDP_MTU_IDX];
+		public SocketCollection(){
+			socketDic = new Dictionary<NetIPEndPoint, SocketBase> ();
+			socketArrays = new List<SocketBase> ();
+			count = 0;
 		}
 
-		protected override void OnConnect (){
-			this.socket = new Socket (IPEndPoint.GetAddressFamily(), SocketType.Dgram, ProtocolType.Udp);
+		public void Clear(){
+			socketDic.Clear ();
+			socketArrays.Clear ();
 		}
 
-		public override void SendTo (byte[] bytes){
-			try{
+		public bool TryGetValue(NetIPEndPoint endPoint, out SocketBase peer){
+			return socketDic.TryGetValue(endPoint, out peer);
+		}
 
-				//int ret = this.socket.SendTo (bytes, IPEndPoint.EndPoint);
-				//Debug.LogFormat("Send packet to {0}, result: {1}", IPEndPoint.EndPoint, ret);
+		public void Add(SocketBase socket){
+//			socketArrays.Add(socket);
+//			socketDic.Add(endPoint, socket);
+//			count++;
+		}
 
-			}catch(SocketException ex){
-				Debug.LogError (ex);
+		public bool ContainsAddress(NetIPEndPoint endPoint){
+			SocketBase ret = null;
+			if (socketDic.TryGetValue (endPoint, out ret)) {
+				return true;
 			}
+
+			return false;
 		}
 
-		protected override void ReceiveMessage ()
-		{
-			
+		public void RemoveAt(int idx){
+			NetIPEndPoint endPoint = socketArrays [idx].IPEndPoint;
+			socketDic.Remove(endPoint);
+
+			socketArrays[idx] = socketArrays[count - 1];
+			socketArrays[count - 1] = null;
+			count--;
+		}
+
+		public void Remove(NetIPEndPoint endPoint){
+			for (int i = 0; i < count; i++){
+				NetIPEndPoint ipEndPoint = socketArrays [i].IPEndPoint;
+				if (ipEndPoint.Equals(endPoint)){
+					RemoveAt(i);
+					break;
+				}
+			}
 		}
 	}
 }

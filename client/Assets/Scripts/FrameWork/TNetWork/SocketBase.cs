@@ -31,13 +31,17 @@ using System;
 using System.Collections;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using TG.ThreadX;
 
 namespace TG.Net
 {
 	public abstract class SocketBase
 	{
+		private const string RECEIVE_THREAD_NAME = "ReceiveMsgThread";
+
 		protected Socket socket;
+		protected OnMessageReceived messageReceived;
 
 		private SocketManager socketMgr;
 
@@ -59,31 +63,51 @@ namespace TG.Net
 			}
 		}
 
-		public SocketBase(SocketManager socketMgr, NetEventListener listener) {
+		public SocketBase(SocketManager socketMgr, OnMessageReceived messageReceived) {
 			this.socketMgr = socketMgr;
+			this.messageReceived = messageReceived;
+
+			netThread = new ThreadEx (RECEIVE_THREAD_NAME, -1, ReceiveMessageLogic);
+			netThread.Start ();
 		}
 
 		public void Connect (string host, int port){
             _ipEndPoint.SetIPEndPoint(host, port);
-			Connect ();
+			OnConnect ();
 
 			CreateEvent (NetEventType.Connect);
-
-//			netThread = new ThreadEx ("Process update logic", DefaultUpdateTime, ProcessLogic);
-//			netThread.Start ();
 		}
 
-		protected virtual void Connect(){}
+		protected virtual void OnConnect(){}
+
+		public void Close(){
+			if (netThread.IsRunning) {
+				netThread.Stop ();
+			}
+
+			if (socket != null) {
+				socket.Close ();
+				socket = null;
+			}
+
+			OnClose ();
+		}
+
+		protected virtual void OnClose(){}
 
 		protected void CreateEvent(NetEventType type){
 			socketMgr.CreateEvent (type);
 		}
 
-		private void ProcessLogic(){
-			OnProcessLogic ();
+		private void ReceiveMessageLogic(){
+			if (netThread == null || !netThread.IsRunning) {
+				return;
+			}
+
+			ReceiveMessage ();
 		}
 
-		protected virtual void OnProcessLogic(){}
+		protected abstract void ReceiveMessage ();
 
 		public abstract void SendTo (byte[] bytes);
 	}
