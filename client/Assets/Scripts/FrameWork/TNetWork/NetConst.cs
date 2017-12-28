@@ -92,14 +92,20 @@ namespace TG.Net
 		public const int SLIDING_WINDOW = 64;
 
 		// 最合适的mtu大小，避免分片
-		public static readonly int[] POSSIBLE_MTU_SIZE =
-		{
-			1452, // tcp
-			512,  // udp
-		};
+//		public static readonly int[] POSSIBLE_MTU_SIZE =
+//		{
+//			1452, // tcp
+//			512,  // udp
+//		};
 
         #region udp const
-        
+		// TODO udp最大mtu大小 后续根据测试调整
+		public const int MAX_UDP_MTU = 512;
+
+		public const int SEQUENCE_HEAD_SIZE = 3;
+		public const int FRAGMENT_HEAD_SIZE = SEQUENCE_HEAD_SIZE + 6;
+
+
 
         #endregion
 

@@ -36,16 +36,14 @@ namespace TG.Net
 {
 	public class RUDPSocket : SocketBase
 	{
-		private const int RUDP_MTU_IDX = 1;
 		private readonly int mtu = 0;
 
-		private Queue<NetPacket> sendingPackages = new Queue<NetPacket> ();
-		private Queue<NetPacket> pendingPackages = new Queue<NetPacket>();
+		private NetPacket[] sendingPackets;
+		private Queue<NetPacket> pengdingPackages = new Queue<NetPacket> ();
 
 		private int localSeqence;
-		private int remoteSequence;
+		private int curWindowSize;
 		private int localWindowStart;
-		private int remoteWindowStart;
 
 		private readonly NetPacket[] receivedPackets;
 
@@ -55,8 +53,9 @@ namespace TG.Net
 			: base(socketMgr, messageReceived){
 
 			this.NetType = TNetType.ROUDP;
+			this.mtu = NetConst.MAX_UDP_MTU;
+			this.sendingPackets = new NetPacket[NetConst.SLIDING_WINDOW];
 			this.receivedPackets = new NetPacket[NetConst.SLIDING_WINDOW];
-			this.mtu = NetConst.POSSIBLE_MTU_SIZE [RUDP_MTU_IDX];
 		}
 
 		protected override void OnConnect (){
@@ -64,19 +63,26 @@ namespace TG.Net
 		}
 
 		public override void SendTo (byte[] bytes){
-			try{
-
-				//int ret = this.socket.SendTo (bytes, IPEndPoint.EndPoint);
-				//Debug.LogFormat("Send packet to {0}, result: {1}", IPEndPoint.EndPoint, ret);
-
-			}catch(SocketException ex){
-				Debug.LogError (ex);
+			if(NetConst.SEQUENCE_HEAD_SIZE + bytes.Length > NetConst.MAX_UDP_MTU){
+				
+			}else{
+				
 			}
 		}
 
 		protected override void ReceiveMessage ()
 		{
 			
+		}
+
+		private bool IsRecentPacket(ushort preSeq, ushort curSeq){
+			const ushort halfVal = ushort.MaxValue / 2;
+			if (preSeq < curSeq && curSeq - preSeq <= halfVal
+				|| preSeq > curSeq && preSeq - curSeq > halfVal) {
+				return true;
+			}
+
+			return false;
 		}
 	}
 }
