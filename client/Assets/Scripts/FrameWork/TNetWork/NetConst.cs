@@ -102,7 +102,8 @@ namespace TG.Net
 		// TODO udp最大mtu大小 后续根据测试调整
 		public const int MAX_UDP_MTU = 512;
 
-		public const int SEQUENCE_HEAD_SIZE = 3;
+        public const int HEAD_SIZE = 1;
+		public const int SEQUENCE_HEAD_SIZE = HEAD_SIZE + 2;
 		public const int FRAGMENT_HEAD_SIZE = SEQUENCE_HEAD_SIZE + 6;
 
 

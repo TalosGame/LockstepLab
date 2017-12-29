@@ -58,10 +58,19 @@ namespace TG.Net
 			}
 		}
 
-		protected override void ReceiveMessage ()
-		{
+		protected override void ReceiveMessage (){
 			
 		}
+
+        private bool IsRecentPacket(ushort preSeq, ushort curSeq) {
+            const ushort halfVal = ushort.MaxValue / 2;
+            if (preSeq < curSeq && curSeq - preSeq <= halfVal
+                || preSeq > curSeq && preSeq - curSeq > halfVal) {
+                return true;
+            }
+
+            return false;
+        }
 	}
 }
 

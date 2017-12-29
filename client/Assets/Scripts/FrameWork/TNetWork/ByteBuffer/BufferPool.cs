@@ -60,9 +60,7 @@ namespace TG.Net {
 	}
 
 	public class BufferPool : SingletonBase<BufferPool> {
-
-		private List<BufferSegment> segments = new List<BufferSegment> ();
-		private List<int> chunkSizes = new List<int> ();
+        private Dictionary<int, BufferSegment> segments = new Dictionary<int, BufferSegment>();
 
 		class BufferSegment{
 			public byte[][] buffers;
@@ -119,37 +117,33 @@ namespace TG.Net {
 		}
 
 		public void CreateSegment(int chunkSize, int capacity){
-			if (chunkSizes.Contains (chunkSize)) {
-				return;
+            BufferSegment segment = null;
+            if (segments.TryGetValue(chunkSize, out segment)) {
+                return;
 			}
 
-			chunkSizes.Add (chunkSize);
-
-			BufferSegment segment = new BufferSegment (chunkSize, capacity);
-			segments.Add (segment);
+			segment = new BufferSegment (chunkSize, capacity);
+			segments.Add(chunkSize, segment);
 		}
 
 		public byte[] GetBuffer(int size){
-			for(int i = 0; i < segments.Count; i++){
-				var segment = segments[i];
-				if(size <= segment.chunkSize){
-					return segment.GetBuffer ();
-				}
+            BufferSegment segment = null;
+            if (!segments.TryGetValue(size, out segment)) {
+                // Don't cache big size buffer, keep program running
+                return new byte[size];
 			}
 
-			// buffer cache miss, keep program running 
-			return new byte[size];
+            return segment.GetBuffer ();
 		}
 
 		public void ReturnBuffer(byte[] bytes){
 			int size = bytes.Length;
-			for (int i = 0; i < segments.Count; ++i){
-				var segment = segments[i];
-				if (size == segment.chunkSize){
-					segment.ReturnBuffer (bytes);
-					break;
-				}
-			}
+            BufferSegment segment = null;
+            if (!segments.TryGetValue(size, out segment)) {
+                return;
+            }
+
+            segment.ReturnBuffer(bytes);
 		}
     }
 }

@@ -58,17 +58,39 @@ namespace TG.Net
 			this.receivedPackets = new NetPacket[NetConst.SLIDING_WINDOW];
 		}
 
+        protected override void OnInit() {
+            MLPoolManager.Instance.CreatePool<MLObjectPool<UDPNetPacket>, UDPNetPacket>(preloadAmount: 50, isLimit: false);
+        }
+
 		protected override void OnConnect (){
 			this.socket = new Socket (IPEndPoint.GetAddressFamily(), SocketType.Dgram, ProtocolType.Udp);
 		}
 
 		public override void SendTo (byte[] bytes){
-			if(NetConst.SEQUENCE_HEAD_SIZE + bytes.Length > NetConst.MAX_UDP_MTU){
-				
-			}else{
-				
+            int headSize = NetPacket.GetHeadSize(PacketProperty.ReliableOrdered);
+            int bodySize = bytes.Length;
+
+            // split packet if size > udp mtu
+            if (headSize + bodySize > NetConst.MAX_UDP_MTU) {
+
+                int fullPacketSize = NetConst.MAX_UDP_MTU - headSize;
+                int packetDataSize = fullPacketSize - NetConst.FRAGMENT_HEAD_SIZE;
+                int packetProbNum = bodySize / packetDataSize;
+                int leftPacketSize = bodySize % packetDataSize;
+                int totalPacketNum = packetProbNum + (leftPacketSize == 0 ? 0 : 1);
+
+
+
+
+
+                return;
 			}
+
+
 		}
+
+
+
 
 		protected override void ReceiveMessage ()
 		{

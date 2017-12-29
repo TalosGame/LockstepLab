@@ -39,6 +39,8 @@ namespace TG.Net
 {
 	public class SocketManager
 	{
+        private const int HEART_INTERVAL = 1000;
+
         private SocketBase socket;
 
 		private MLPoolManager poolMgr;
@@ -54,7 +56,6 @@ namespace TG.Net
 		private void InitPools(){
 			poolMgr = MLPoolManager.Instance;
 			poolMgr.CreatePool<MLObjectPool<NetEvent>, NetEvent>(preloadAmount:50, isLimit:false);
-			poolMgr.CreatePool<MLObjectPool<NetPacket>, NetPacket>(preloadAmount:50, isLimit:false);
 		}
 
 		private void InitBufferPool(){
@@ -87,6 +88,8 @@ namespace TG.Net
                 Debug.LogError("Unknown socket type. Create error!");
                 break;
 			}
+
+            socket.Init();
 		}
 
         public void Connect(string host, int port){
@@ -106,8 +109,13 @@ namespace TG.Net
 			
 		}
 
-		#region net event
-		public void CreateEvent(NetEventType type){
+        #region thread logic
+
+
+        #endregion
+
+        #region net event
+        public void CreateEvent(NetEventType type){
 
 			NetEvent evt = MLPoolManager.Instance.Spawn<NetEvent> (NetConst.POOL_NET_EVENT);
 			evt.Type = type;
@@ -127,6 +135,7 @@ namespace TG.Net
 				{
 					evt = eventsQueue.Dequeue();
 				}
+
 				ProcessEvent(evt);
 			}
 		}

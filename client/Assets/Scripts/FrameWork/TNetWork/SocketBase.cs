@@ -66,10 +66,18 @@ namespace TG.Net
 		public SocketBase(SocketManager socketMgr, OnMessageReceived messageReceived) {
 			this.socketMgr = socketMgr;
 			this.messageReceived = messageReceived;
-
-			netThread = new ThreadEx (RECEIVE_THREAD_NAME, -1, ReceiveMessageLogic);
-			netThread.Start ();
 		}
+
+        public void Init() {
+            OnInit();
+
+            netThread = new ThreadEx(RECEIVE_THREAD_NAME, -1, ReceiveMessageLogic);
+            netThread.Start();
+        }
+
+        protected virtual void OnInit() { 
+        
+        }
 
 		public void Connect (string host, int port){
             _ipEndPoint.SetIPEndPoint(host, port);

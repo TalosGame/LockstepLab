@@ -36,25 +36,20 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class MLPoolManager : MonoSingleton<MLPoolManager>
-{
-	private MLPoolDictionary pools = new MLPoolDictionary();
+public class MLPoolManager : MonoSingleton<MLPoolManager> {
+    private MLPoolDictionary pools = new MLPoolDictionary();
 
     [SerializeField]
     private bool dontDestroyOnLoad = false;
-    public bool DontDestroyOnLoad
-    {
-        get
-        {
+    public bool DontDestroyOnLoad {
+        get {
             return this.dontDestroyOnLoad;
         }
 
-        set
-        {
+        set {
             this.dontDestroyOnLoad = value;
 
-            if(this.dontDestroyOnLoad)
-            {
+            if (this.dontDestroyOnLoad) {
                 this.gameObject.AddToDDOLRoot();
                 return;
             }
@@ -63,81 +58,72 @@ public class MLPoolManager : MonoSingleton<MLPoolManager>
         }
     }
 
-    public void CreatePool<TP, T>(T poolItem = null, int preloadAmount = 10, bool isLimit = true) 
-		where TP : MLPoolBase<T>
-        where T  : class
-    {
-		Type type = typeof(TP);
-		MLPoolBase<T> pool = pools.CreatePool (type) as MLPoolBase<T>;
-		if (pool == null) 
-		{
-			return;
-		}
+    public void CreatePool<TP, T>(T poolItem = null, int preloadAmount = 10, bool isLimit = true)
+        where TP : MLPoolBase<T>
+        where T : class {
+        Type type = typeof(TP);
+        MLPoolBase<T> pool = pools.CreatePool(type) as MLPoolBase<T>;
+        if (pool == null) {
+            return;
+        }
+
+        // check pool exist
+        if (pools.GetPool(pool.ItemName) != null) {
+            return;
+        }
 
         pool.Init(poolItem, preloadAmount, transform, isLimit);
         pool.CreatePoolItems();
 
-		pools.AddPool (pool.ItemName, pool);
+        pools.AddPool(pool.ItemName, pool);
     }
 
-	public MLPoolBase<T> GetPool<T>(string poolItem) where T : class
-	{
-		IMLPool pool = pools.GetPool(poolItem);
-		if (pool == null)
-		{
-			return null;
-		}
+    public MLPoolBase<T> GetPool<T>(string poolItem) where T : class {
+        IMLPool pool = pools.GetPool(poolItem);
+        if (pool == null) {
+            return null;
+        }
 
-		return pool as MLPoolBase<T>;
-	}
+        return pool as MLPoolBase<T>;
+    }
 
-	public T Spawn<T>(string poolItem) where T : class
-	{
-		return Spawn<T>(poolItem, null);
-	}
+    public T Spawn<T>(string poolItem) where T : class {
+        return Spawn<T>(poolItem, null);
+    }
 
-	public T Spawn<T>(string poolItem, Transform parent) where T : class
-	{
-		MLPoolBase<T> pool = pools.GetPool(poolItem) as MLPoolBase<T>;
-		if(pool == null)
-		{
-			return null;
-		}
+    public T Spawn<T>(string poolItem, Transform parent) where T : class {
+        MLPoolBase<T> pool = pools.GetPool(poolItem) as MLPoolBase<T>;
+        if (pool == null) {
+            return null;
+        }
 
-		return pool.Spawn(parent);
-	}
+        return pool.Spawn(parent);
+    }
 
-	public void Despawn<T>(string poolItem, T item) where T : class
-    {
-		MLPoolBase<T> pool = pools.GetPool(poolItem) as MLPoolBase<T>;
-        if (pool == null)
-        {
+    public void Despawn<T>(string poolItem, T item) where T : class {
+        MLPoolBase<T> pool = pools.GetPool(poolItem) as MLPoolBase<T>;
+        if (pool == null) {
             return;
         }
 
-        if (!pool.Despawn(item))
-        {
+        if (!pool.Despawn(item)) {
             Debug.LogError("Don't Despawn duplicate Object!");
         }
     }
 
-	public void DespawnAll(string poolItem)
-    {
-		IMLPool pool = pools.GetPool(poolItem);
-		if (pool == null)
-		{
-			return;
-		}
+    public void DespawnAll(string poolItem) {
+        IMLPool pool = pools.GetPool(poolItem);
+        if (pool == null) {
+            return;
+        }
 
         pool.DespawnAll();
     }
 
-	public void DespawnAll()
-    {
+    public void DespawnAll() {
         var enumera = pools.GetEnumerator();
-        while (enumera.MoveNext())
-        {
-			IMLPool pool = enumera.Current.Value;
+        while (enumera.MoveNext()) {
+            IMLPool pool = enumera.Current.Value;
             pool.DespawnAll();
         }
     }
