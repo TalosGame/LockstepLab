@@ -58,10 +58,6 @@ namespace TG.Net
 			}
 		}
 
-		protected override void ReceiveMessage (){
-			
-		}
-
         private bool IsRecentPacket(ushort preSeq, ushort curSeq) {
             const ushort halfVal = ushort.MaxValue / 2;
             if (preSeq < curSeq && curSeq - preSeq <= halfVal

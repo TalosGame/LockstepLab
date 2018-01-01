@@ -38,17 +38,10 @@ namespace TG.Net
 {
 	public abstract class SocketBase
 	{
-		private const string RECEIVE_THREAD_NAME = "ReceiveMsgThread";
-
 		protected Socket socket;
 		protected OnMessageReceived messageReceived;
 
-		private SocketManager socketMgr;
-
-		private ThreadEx netThread;
-		private const int DefaultUpdateTime = 15;
-
-		protected NetIPEndPoint _ipEndPoint = new NetIPEndPoint();
+		protected NetIPEndPoint _ipEndPoint;
         public NetIPEndPoint IPEndPoint{
             get { return _ipEndPoint; }
         }
@@ -63,24 +56,16 @@ namespace TG.Net
 			}
 		}
 
+		private SocketManager socketMgr;
+
 		public SocketBase(SocketManager socketMgr, OnMessageReceived messageReceived) {
 			this.socketMgr = socketMgr;
 			this.messageReceived = messageReceived;
 		}
 
-        public void Init() {
-            OnInit();
-
-            netThread = new ThreadEx(RECEIVE_THREAD_NAME, -1, ReceiveMessageLogic);
-            netThread.Start();
-        }
-
-        protected virtual void OnInit() { 
-        
-        }
-
 		public void Connect (string host, int port){
-            _ipEndPoint.SetIPEndPoint(host, port);
+            _ipEndPoint = new NetIPEndPoint(host, port);
+
 			OnConnect ();
 
 			CreateEvent (NetEventType.Connect);
@@ -89,33 +74,65 @@ namespace TG.Net
 		protected virtual void OnConnect(){}
 
 		public void Close(){
-			if (netThread.IsRunning) {
-				netThread.Stop ();
-			}
+			OnClose ();
 
 			if (socket != null) {
 				socket.Close ();
 				socket = null;
 			}
-
-			OnClose ();
 		}
 
 		protected virtual void OnClose(){}
 
-		protected void CreateEvent(NetEventType type){
-			socketMgr.CreateEvent (type);
-		}
-
-		private void ReceiveMessageLogic(){
-			if (netThread == null || !netThread.IsRunning) {
-				return;
+		protected NetPacket GetNetPacket(TNetType type, PacketProperty property, int size){
+            NetPacket packet = CreatePacket(type);
+			if (packet == null) {
+				throw new NullReferenceException ("packet");
 			}
 
-			ReceiveMessage ();
+			size += NetPacket.GetHeadSize(property);
+			packet.Init (property, size);
+			return packet;
 		}
 
-		protected abstract void ReceiveMessage ();
+        protected NetPacket GetNetPacket(TNetType type, byte[] datas, int offset, int size){
+            NetPacket packet = CreatePacket(type);
+            if (packet == null) {
+                throw new NullReferenceException ("packet");
+            }
+
+            packet.Init(datas, 0, size);
+            return packet;
+        }
+
+        private NetPacket CreatePacket(TNetType type){
+            NetPacket packet = null;
+            MLPoolManager poolMgr = MLPoolManager.Instance;
+            // TODO need update here.
+            switch (type) {
+                case TNetType.TCP:
+
+                    break;
+                    // udp packet
+                    packet = poolMgr.Spawn<UDPNetPacket>(NetConst.POOL_UDP_NET_PACKET);
+                default:
+                    break;
+            }
+
+            return packet;    
+        }
+
+		protected void CreateEvent(NetEventType type){
+            socketMgr.CreateEvent (type);
+		}
+
+		protected void CreateEvent(NetEventType type, int errCode){
+            socketMgr.CreateEvent (type, errCode);
+		}
+
+		protected void CreateEvent(NetEventType type, byte[] datas){
+            socketMgr.CreateEvent (type, datas);
+		}
 
 		public abstract void SendTo (byte[] bytes);
 	}

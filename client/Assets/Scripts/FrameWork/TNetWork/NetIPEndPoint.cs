@@ -1,9 +1,9 @@
 ﻿//
-// Class:	NetEndPoint.cs
-// Date:	2017/11/13 17:10
-// Author: 	Miller
-// Email:	wangquan <wangquancomi@gmail.com>
-// QQ:		408310416
+// Class:   NetEndPoint.cs
+// Date:    2017/11/13 17:10
+// Author:  Miller
+// Email:   wangquan <wangquancomi@gmail.com>
+// QQ:      408310416
 // Desc:
 //
 //
@@ -33,108 +33,105 @@ using System.Net.Sockets;
 
 namespace TG.Net
 {
-	public sealed class NetIPEndPoint
-	{
-		private IPEndPoint endPoint;
-		public IPEndPoint EndPoint
-		{
-			set{
-				endPoint = value;
-			}
+    public sealed class NetIPEndPoint
+    {
+        private IPEndPoint endPoint;
+        public IPEndPoint EndPoint
+        {
+            set{
+                endPoint = value;
+            }
 
-			get{
-				return endPoint;
-			}
-		}
+            get{
+                return endPoint;
+            }
+        }
 
-		public string Host 
-		{
-			get{
-				return EndPoint.Address.ToString ();
-			}
-		}
+        public string Host 
+        {
+            get{
+                return EndPoint.Address.ToString ();
+            }
+        }
 
-		public int Port
-		{
-			get{
-				return EndPoint.Port;
-			}
-		}
+        public int Port
+        {
+            get{
+                return EndPoint.Port;
+            }
+        }
 
-		private TNetType netType = TNetType.Unknown;
-		public TNetType NetType
-		{
-			set{
-				netType = value;
-			}
+        private TNetType netType = TNetType.Unknown;
+        public TNetType NetType
+        {
+            set{
+                netType = value;
+            }
 
-			get{ 
-				return netType;
-			}
-		}
+            get{ 
+                return netType;
+            }
+        }
 
-		public override bool Equals(object obj)
-		{
-			if (!(obj is NetIPEndPoint))
-			{
-				return false;
-			}
+        public override bool Equals(object obj)
+        {
+            if (!(obj is NetIPEndPoint))
+            {
+                return false;
+            }
 
-			NetIPEndPoint option = obj as NetIPEndPoint;
-			if (NetType != option.NetType) {
-				return false;
-			}
+            NetIPEndPoint option = obj as NetIPEndPoint;
+            if (NetType != option.NetType) {
+                return false;
+            }
 
-			if (!EndPoint.Equals (option.EndPoint)) {
-				return false;
-			}
+            if (!EndPoint.Equals (option.EndPoint)) {
+                return false;
+            }
 
-			return true;
-		}
+            return true;
+        }
 
-		public override string ToString()
-		{
-			return EndPoint.ToString();
-		}
+        public override string ToString(){
+            return EndPoint.ToString();
+        }
 
-		public override int GetHashCode()
-		{
-			return EndPoint.GetHashCode();
-		}
+        public override int GetHashCode(){
+            return EndPoint.GetHashCode();
+        }
 
-		public void SetIPEndPoint(string ip, int port)
-		{
-			IPAddress ipAdress = null;
-			bool isValidIP = IPAddress.TryParse(ip, out ipAdress);
-			if (isValidIP)
-			{
-				EndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
-				return;
-			}
+        public NetIPEndPoint(IPEndPoint endPoint){
+            this.EndPoint = endPoint;
+        }
 
-			IPHostEntry hostEntry = Dns.GetHostEntry(ip);
-			EndPoint = new IPEndPoint(hostEntry.AddressList[0], port);
-		}
+        public NetIPEndPoint(string ip, int port){
+            IPAddress ipAdress = null;
+            bool isValidIP = IPAddress.TryParse(ip, out ipAdress);
+            if (isValidIP){
+                EndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
+                return;
+            }
 
-		public AddressFamily GetAddressFamily()
-		{
-			if (EndPoint == null) {
-				return AddressFamily.Unknown;
-			}
+            IPHostEntry hostEntry = Dns.GetHostEntry(ip);
+            EndPoint = new IPEndPoint(hostEntry.AddressList[0], port);
+        }
 
-			IPAddress[] address = Dns.GetHostAddresses(Host);
-			if (address [0].AddressFamily == AddressFamily.InterNetworkV6) 
-			{
-				return AddressFamily.InterNetworkV6;
-			}
+        public AddressFamily GetAddressFamily(){
+            if (EndPoint == null) {
+                return AddressFamily.Unknown;
+            }
 
-			if (address [0].AddressFamily == AddressFamily.InterNetwork) 
-			{
-				return AddressFamily.InterNetwork;
-			}
+            IPAddress[] address = Dns.GetHostAddresses(Host);
+            if (address [0].AddressFamily == AddressFamily.InterNetworkV6) {
+                return AddressFamily.InterNetworkV6;
+            }
 
-			return AddressFamily.Unknown;
-		}
-	}
+            if (address [0].AddressFamily == AddressFamily.InterNetwork) {
+                return AddressFamily.InterNetwork;
+            }
+
+            return AddressFamily.Unknown;
+        }
+    }
 }
 

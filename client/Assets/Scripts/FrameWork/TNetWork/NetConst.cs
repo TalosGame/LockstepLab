@@ -32,7 +32,7 @@ using System;
 namespace TG.Net
 {
 	#region net delegate
-	public delegate void OnMessageReceived(byte[] data, int length, int errorCode, NetIPEndPoint remoteEndPoint);
+    public delegate void OnMessageReceived(NetPacket packet, int errorCode, NetIPEndPoint remoteEndPoint);
 
 	delegate void OnConncect();
 
@@ -87,9 +87,11 @@ namespace TG.Net
 	{
 		public const string POOL_NET_EVENT = "NetEvent";
 		public const string POOL_NET_PACKAGE = "NetPackage";
+		public const string POOL_UDP_NET_PACKET = "RUDPSocket";
 
 		// 这里可以根据需求自己调整
 		public const int SLIDING_WINDOW = 64;
+		public const int RECEIVE_BUFFER_SIZE = 1024;
 
 		// 最合适的mtu大小，避免分片
 //		public static readonly int[] POSSIBLE_MTU_SIZE =
@@ -98,15 +100,20 @@ namespace TG.Net
 //			512,  // udp
 //		};
 
+		#region tcp const
+
+		#endregion
+
         #region udp const
 		// TODO udp最大mtu大小 后续根据测试调整
 		public const int MAX_UDP_MTU = 512;
 
+		public const ushort MaxSequence = ushort.MaxValue;
+		public const ushort HalfMaxSequence = MaxSequence / 2;
+
         public const int HEAD_SIZE = 1;
 		public const int SEQUENCE_HEAD_SIZE = HEAD_SIZE + 2;
-		public const int FRAGMENT_HEAD_SIZE = SEQUENCE_HEAD_SIZE + 6;
-
-
+		public const int FRAGMENT_HEAD_SIZE = 6;
 
         #endregion
 

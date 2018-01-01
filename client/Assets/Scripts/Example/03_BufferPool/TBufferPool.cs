@@ -40,25 +40,25 @@ public class TBufferPool : MonoBehaviour {
 //		int j = 0;
 //		j++;
 
-		UDPNetPacket packet = new UDPNetPacket (20);
-		//packet.head = 
+//		UDPNetPacket packet = new UDPNetPacket (20);
+//		packet.IsFragment = true;
 //		packet.Property = PacketProperty.AckReliable;
-//		
+//		packet.Sequence = 1000;
+//
+//		bool IsFragment = packet.IsFragment;
+//		PacketProperty property = packet.Property;
+//		int sequence = packet.Sequence;
 
-		packet.IsFragment = true;
-		packet.Property = PacketProperty.AckReliable;
-		packet.Sequence = 1000;
+		ByteBuffer buffer = new ByteBuffer ();
+		buffer.Alloc (128);
 
-		bool IsFragment = packet.IsFragment;
-		PacketProperty property = packet.Property;
-		int sequence = packet.Sequence;
+		buffer.WriteUShort (65535);
+
+		var ret = buffer.ReadUShort ();
 
 		int i = 0;
 		i++;
 	}
-
-
-
 
 //	private IEnumerable<ArraySegment<byte>> GetBuffs()
 //	{

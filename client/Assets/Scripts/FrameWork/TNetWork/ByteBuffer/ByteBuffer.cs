@@ -32,7 +32,7 @@ using System.Collections.Generic;
 
 namespace TG.Net {
     public partial class ByteBuffer {
-		private readonly int chunkSize;
+		private int chunkSize;
 
 		private byte[] buffer;
 		public byte[] Buffers{
@@ -53,10 +53,19 @@ namespace TG.Net {
             set { readIndex = value; }
         }
 
+		public int Length{
+			get{
+				if (buffer == null) {
+					return 0;
+				}
+
+				return buffer.Length;
+			}
+		}
+
         private bool dispose;
 
-		public ByteBuffer(int size){
-
+		public void Alloc(int size){
 			if (size <= 0) {
 				throw new ArgumentException("size");
 			}
@@ -66,24 +75,46 @@ namespace TG.Net {
 			this.dispose = false;
 
 			this.buffer = BufferPool.Instance.GetBuffer (size);
-            this.chunkSize = this.buffer.Length;
+			this.chunkSize = this.buffer.Length;
 		}
 
-        public ByteBuffer(byte[] bytes) {
-            if (bytes == null || bytes.Length <= 0) {
-                throw new ArgumentException("bytes");
-            }
+		public void Copy(byte[] bytes){
+			if (bytes == null || bytes.Length <= 0) {
+				throw new ArgumentException("bytes");
+			}
+
+			this.ReadIndex = 0;
+			this.dispose = false;
+
+			this.buffer = BufferPool.Instance.GetBuffer(bytes.Length);
+			this.chunkSize = this.buffer.Length;
+
+			WriteBytes(bytes);
+		}
+
+        public void Copy(byte[] bytes, int offset, int size){
+            if (bytes == null)
+                throw new ArgumentNullException("data");
+            if (offset < 0 || offset > bytes.Length)
+                throw new ArgumentOutOfRangeException("offset");
+            if (size < 0 || size + offset > bytes.Length)
+                throw new ArgumentOutOfRangeException("size");
 
             this.ReadIndex = 0;
             this.dispose = false;
 
-            this.buffer = BufferPool.Instance.GetBuffer(bytes.Length);
+            this.buffer = BufferPool.Instance.GetBuffer(size);
             this.chunkSize = this.buffer.Length;
 
-            WriteBytes(bytes);
+            WriteBytes(bytes, offset, size);
         }
 
-        public void Dispose() {
+        public void Clear(){
+            this.WriteIndex = 0;
+            this.ReadIndex = 0;
+        }
+
+        public void Release() {
 			BufferPool.Instance.ReturnBuffer(buffer);
             dispose = true;
 			buffer = null;

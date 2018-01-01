@@ -32,7 +32,7 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
 namespace TG.Net {
-	public partial class ByteBuffer : IDisposable {
+	public partial class ByteBuffer {
 
         public unsafe void WriteInt(int val) {
             byte* ptrVal = (byte*)&val;
@@ -67,6 +67,56 @@ namespace TG.Net {
 			
 			WriteIndex += 2;
         }
+
+		public unsafe void WriteShort(int offset, short val){
+			byte* ptrVal = (byte*)&val;
+			WriteIndex = offset;
+
+			fixed (byte* ptrDst = buffer) {
+#if BIGENDIAN
+				*(ptrDst + WriteIndex + 1) = *ptrVal;
+				*(ptrDst + WriteIndex) = *(ptrVal + 1);
+#else
+				*(ptrDst + WriteIndex) = *ptrVal;
+				*(ptrDst + WriteIndex + 1) = *(ptrVal + 1);
+#endif
+			}
+
+			WriteIndex += 2;
+		}
+
+		public unsafe void WriteUShort(ushort val){
+			byte* ptrVal = (byte*)&val;
+
+			fixed (byte* ptrDst = buffer) {
+#if BIGENDIAN
+				*(ptrDst + WriteIndex + 1) = *ptrVal;
+				*(ptrDst + WriteIndex) = *(ptrVal + 1);
+#else
+				*(ptrDst + WriteIndex) = *ptrVal;
+				*(ptrDst + WriteIndex + 1) = *(ptrVal + 1);
+#endif
+			}
+
+			WriteIndex += 2;
+		}
+
+		public unsafe void WriteUShort(int offset, ushort val){
+			byte* ptrVal = (byte*)&val;
+			WriteIndex = offset;
+
+			fixed (byte* ptrDst = buffer) {
+#if BIGENDIAN
+				*(ptrDst + WriteIndex + 1) = *ptrVal;
+				*(ptrDst + WriteIndex) = *(ptrVal + 1);
+#else
+				*(ptrDst + WriteIndex) = *ptrVal;
+				*(ptrDst + WriteIndex + 1) = *(ptrVal + 1);
+#endif
+			}
+
+			WriteIndex += 2;
+		}
 
         public unsafe void WriteByte(byte val) {
             byte* ptrVal = (byte*)&val;

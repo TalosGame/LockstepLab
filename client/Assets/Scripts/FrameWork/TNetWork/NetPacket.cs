@@ -55,51 +55,57 @@ namespace TG.Net {
     }
 
     public abstract class NetPacket {
-        public byte[] datas;
+		public ByteBuffer buffer = new ByteBuffer();
 
-        public NetPacket() { 
+		public void Init(PacketProperty property, int size){
+			this.buffer.Alloc(size);
+			this.Property = property;
+		}
+
+        public void Init(byte[] datas, int offset, int size){
+            this.buffer.Copy(datas, offset, size);
         }
 
-        public NetPacket(int size) { 
-            datas = BufferPool.Instance.GetBuffer(size);        
+        public void Close() { 
+			buffer.Release ();
         }
 
-        public void Dispose() { 
-            BufferPool.Instance.ReturnBuffer(datas);
-            datas = null;
-        }
+		public byte[] RawData{
+			get{ 
+				return buffer.Buffers;
+			}
+		}
 
-        public static int GetHeadSize(PacketProperty property) {
-            return IsSequenced(property) ? NetConst.SEQUENCE_HEAD_SIZE : NetConst.HEAD_SIZE;
-        }
+		public int Length{
+			get{ 
+				return buffer.Length;
+			}
+		}
 
-        private static bool IsSequenced(PacketProperty property) {
-            return property == PacketProperty.ReliableOrdered ||
-                property == PacketProperty.Reliable ||
-                property == PacketProperty.Sequenced ||
-                property == PacketProperty.Ping ||
-                property == PacketProperty.Pong ||
-                property == PacketProperty.AckReliable ||
-                property == PacketProperty.AckReliableOrdered;
-        }
+		public static int GetHeadSize(PacketProperty property) {
+			return IsSequenced(property) ? NetConst.SEQUENCE_HEAD_SIZE : NetConst.HEAD_SIZE;
+		}
 
-        protected void GetBytes(byte[] bytes, int startIndex, short value) {
-            WriteLittleEndian(bytes, startIndex, value);
-        }
+		private static bool IsSequenced(PacketProperty property) {
+			return property == PacketProperty.ReliableOrdered ||
+				property == PacketProperty.Reliable ||
+				property == PacketProperty.Sequenced ||
+				property == PacketProperty.Ping ||
+				property == PacketProperty.Pong ||
+				property == PacketProperty.AckReliable ||
+				property == PacketProperty.AckReliableOrdered;
+		}
 
-        protected void GetBytes(byte[] bytes, int startIndex, ushort value) {
-            WriteLittleEndian(bytes, startIndex, (short)value);
-        }
+		public PacketProperty Property {
+			get { return (PacketProperty)(RawData[0] & 0x7F); }
+			set {
+				RawData[0] = (byte)((RawData[0] & 0x80) | ((byte)value & 0x7F));
+			}
+		}
 
-        private void WriteLittleEndian(byte[] buffer, int offset, short data) {
-#if BIGENDIAN
-			buffer[offset + 1] = (byte)(data);
-			buffer[offset    ] = (byte)(data >> 8);
-#else
-            buffer[offset] = (byte)(data);
-            buffer[offset + 1] = (byte)(data >> 8);
-#endif
-        }
+		public void WriteBytes(byte[] bytes, int offset, int size){
+			buffer.WriteBytes (bytes, offset, size);
+		}
     }
 
     /// <summary>
@@ -110,51 +116,41 @@ namespace TG.Net {
     /// 7 FragmentsTotal
     /// </summary>
     public class UDPNetPacket : NetPacket {
-        public UDPNetPacket(int size) : base(size) {
-        }
-
         public bool IsFragment {
             get {
-                return (datas[0] & 0x80) != 0;
+				return (RawData[0] & 0x80) != 0;
             }
 
             set {
                 if (value) {
-                    datas[0] |= 0x80;
+					RawData[0] |= 0x80;
                     return;
                 }
 
-                datas[0] &= 0x7F;
-            }
-        }
-
-        public PacketProperty Property {
-            get { return (PacketProperty)(datas[0] & 0x7F); }
-            set {
-                datas[0] = (byte)((datas[0] & 0x80) | ((byte)value & 0x7F));
+				RawData[0] &= 0x7F;
             }
         }
 
         public ushort Sequence {
-            get { return (ushort)(BitConverter.ToUInt16(datas, 1)); }
+			get { return (ushort)(BitConverter.ToUInt16(RawData, 1)); }
             set {
-                GetBytes(datas, 1, value);
+				buffer.WriteUShort(1, value);
             }
         }
 
         public ushort FragmentId {
-            get { return BitConverter.ToUInt16(datas, 3); }
-            set { GetBytes(datas, 3, value); }
+			get { return BitConverter.ToUInt16(RawData, 3); }
+			set { buffer.WriteUShort(3, value); }
         }
 
         public ushort FragmentPart {
-            get { return BitConverter.ToUInt16(datas, 5); }
-            set { GetBytes(datas, 5, value); }
+			get { return BitConverter.ToUInt16(RawData, 5); }
+			set { buffer.WriteUShort(5, value); }
         }
 
         public ushort FragmentsTotal {
-            get { return BitConverter.ToUInt16(datas, 7); }
-            set { GetBytes(datas, 7, value); }
+			get { return BitConverter.ToUInt16(RawData, 7); }
+			set { buffer.WriteUShort(7, value); }
         }
     }
 }

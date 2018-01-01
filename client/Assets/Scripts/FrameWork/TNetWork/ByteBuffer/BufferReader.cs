@@ -32,7 +32,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace TG.Net {
-    public partial class ByteBuffer : IDisposable {
+    public partial class ByteBuffer {
 
         public int AvailableBytes {
             get { return chunkSize - ReadIndex; }
@@ -50,6 +50,12 @@ namespace TG.Net {
             return ret;
         }
 
+		public ushort ReadUShort() {
+			ushort ret = BitConverter.ToUInt16(buffer, ReadIndex);
+			ReadIndex += 2;
+			return ret;
+		}
+
         public byte ReadByte() {
             return buffer[ReadIndex++];
         }
@@ -58,6 +64,16 @@ namespace TG.Net {
             byte[] ret = new byte[AvailableBytes];
             Buffer.BlockCopy(buffer, ReadIndex, ret, 0, AvailableBytes);
             ReadIndex = chunkSize;
+            return ret;
+        }
+
+        public byte[] ReadBytes(int size){
+            if (size < 0 || size > AvailableBytes)
+                throw new ArgumentOutOfRangeException("size");
+
+            byte[] ret = new byte[size];
+            Buffer.BlockCopy(buffer, ReadIndex, ret, 0, size);
+            ReadIndex += size;
             return ret;
         }
 

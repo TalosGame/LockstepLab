@@ -33,18 +33,15 @@ namespace TG.Net
 {
 	public interface NetEventListener
 	{
-		void ReciveMessage (NetIPEndPoint peer, byte[] a);
+		void ReciveMessage (NetIPEndPoint peer, byte[] datas);
 		void OnConnect ();
 	}
 
 	public class NetEvent
 	{
-		public NetEventType Type;
-		//public NetIPEndPoint RemoteEndPoint;
-		//public int AdditionalData;
-		//public DisconnectReason DisconnectReason;
+		public NetEventType type;
+		public int errorCode;
+		public byte[] datas;
 	}
-
-
 }
 

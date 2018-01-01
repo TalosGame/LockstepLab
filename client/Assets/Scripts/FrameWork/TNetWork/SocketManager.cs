@@ -88,8 +88,6 @@ namespace TG.Net
                 Debug.LogError("Unknown socket type. Create error!");
                 break;
 			}
-
-            socket.Init();
 		}
 
         public void Connect(string host, int port){
@@ -109,19 +107,32 @@ namespace TG.Net
 			
 		}
 
-        #region thread logic
-
-
-        #endregion
-
         #region net event
         public void CreateEvent(NetEventType type){
+            NetEvent evt = MLPoolManager.Instance.Spawn<NetEvent> (NetConst.POOL_NET_EVENT);
+            evt.type = type;
 
-			NetEvent evt = MLPoolManager.Instance.Spawn<NetEvent> (NetConst.POOL_NET_EVENT);
-			evt.Type = type;
+            EnqueueEvent (evt);
+        }
 
-			lock (eventsQueue)
-			{
+        public void CreateEvent(NetEventType type, int errCode){
+            NetEvent evt = MLPoolManager.Instance.Spawn<NetEvent> (NetConst.POOL_NET_EVENT);
+            evt.type = type;
+            evt.errorCode = errCode;
+
+            EnqueueEvent (evt);
+        }
+
+        public void CreateEvent(NetEventType type, byte[] datas){
+            NetEvent evt = MLPoolManager.Instance.Spawn<NetEvent> (NetConst.POOL_NET_EVENT);
+            evt.type = type;
+            evt.datas = datas;
+
+            EnqueueEvent (evt);
+        }
+
+		public void EnqueueEvent(NetEvent evt){
+			lock (eventsQueue){
 				eventsQueue.Enqueue(evt);
 			}
 		}
@@ -141,7 +152,7 @@ namespace TG.Net
 		}
 
 		private void ProcessEvent(NetEvent evt){
-			switch (evt.Type) {
+			switch (evt.type) {
 			case NetEventType.Connect:
 				
 				break;
@@ -150,8 +161,14 @@ namespace TG.Net
 		#endregion
 
 		#region received logic
-		public void OnMessageReceived(byte[] data, int length, int errorCode, NetIPEndPoint remoteEndPoint){
-			
+        private void OnMessageReceived(NetPacket packet, int errorCode, NetIPEndPoint remoteEndPoint){
+            if (errorCode != 0){
+                CreateEvent(NetEventType.Error, errorCode);
+                return;
+            }
+
+
+
 		}
 		#endregion
 	}

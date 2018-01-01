@@ -41,11 +41,6 @@ namespace TG.Net
 		{
 			
 		}
-
-		protected override void ReceiveMessage ()
-		{
-			
-		}
 	}
 }
 
