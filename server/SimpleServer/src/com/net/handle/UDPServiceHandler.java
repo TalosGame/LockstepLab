@@ -1,4 +1,6 @@
-package com.net.udp;
+package com.net.handle;
+
+import java.net.InetSocketAddress;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,7 +17,11 @@ public class UDPServiceHandler extends ChannelInboundHandlerAdapter {
 		byte[] d = new byte[len];
 		buf.readBytes(d);
 
-		String a = new String(d, CharsetUtil.UTF_8);
-		System.out.println("read message:" + a);
+		InetSocketAddress address = packet.sender();
+		String hostName = address.getHostName();
+		int port = address.getPort();
+
+		String a = new String(d, 3, len - 3, CharsetUtil.UTF_8);
+		System.out.println("read from host:" + hostName + " port:" + port + " message:" + a);
 	}
 }

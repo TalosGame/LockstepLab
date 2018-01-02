@@ -63,8 +63,6 @@ namespace TG.Net
         public RUDPSocket(SocketManager socketMgr, OnMessageReceived messageReceived) 
             : base(socketMgr, messageReceived){
 
-            this.NetType = TNetType.ROUDP;
-
             this.mtu = NetConst.MAX_UDP_MTU;
             this.sendingPackets = new NetPacket[NetConst.SLIDING_WINDOW];
             this.receivedPackets = new NetPacket[NetConst.SLIDING_WINDOW];
@@ -82,6 +80,7 @@ namespace TG.Net
 
         protected override void OnConnect (){
             this.socket = new Socket (IPEndPoint.GetAddressFamily(), SocketType.Dgram, ProtocolType.Udp);
+            this.NetType = TNetType.ROUDP;
 
             MLPoolManager.Instance.CreatePool<MLObjectPool<UDPNetPacket>, UDPNetPacket>(preloadAmount: 50, isLimit: false);
 
@@ -103,9 +102,9 @@ namespace TG.Net
             int bodySize = bytes.Length;
 
             // split packet if size > udp mtu
-            if (headSize + bodySize > NetConst.MAX_UDP_MTU) {
+            if (headSize + bodySize > mtu) {
 
-                int fullPacketSize = NetConst.MAX_UDP_MTU - headSize;
+                int fullPacketSize = mtu - headSize;
                 int bodyDataSize = fullPacketSize - NetConst.FRAGMENT_HEAD_SIZE;
                 int packetProbNum = bodySize / bodyDataSize;
                 int leftPacketSize = bodySize % bodyDataSize;
@@ -146,7 +145,7 @@ namespace TG.Net
                 return;
             }
 
-            packet = GetNetPacket (TNetType.RUUDP, PacketProperty.ReliableOrdered, bodySize) as UDPNetPacket;
+            packet = GetNetPacket (TNetType.RUUDP, PacketProperty.ReliableOrdered, bytes) as UDPNetPacket;
             DoPendingPacket (packet);
         }
 
@@ -207,9 +206,10 @@ namespace TG.Net
             while (pendingPackages.Count > 0) {
                 UDPNetPacket packet = pendingPackages.Dequeue () as UDPNetPacket;
                 packet.Sequence = (ushort)localSeqence;
-                localSeqence = (localSeqence + 1) % NetConst.MaxSequence;
 
                 sendingPackets [localSeqence % NetConst.SLIDING_WINDOW] = packet;
+
+                localSeqence = (localSeqence + 1) % NetConst.MaxSequence;
                 curWindowSize++;
             }
         }
@@ -262,6 +262,11 @@ namespace TG.Net
                 Debug.LogErrorFormat("[R]Error code: {0} - {1}", (int)ex.SocketErrorCode, ex.ToString());
                 messageReceived(null, (int)ex.SocketErrorCode, remotePoint);
             }
+        }
+
+        public override void ProcessPacket(NetPacket packet)
+        {
+            
         }
         #endregion
     }

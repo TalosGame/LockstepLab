@@ -49,15 +49,19 @@ public class TBufferPool : MonoBehaviour {
 //		PacketProperty property = packet.Property;
 //		int sequence = packet.Sequence;
 
-		ByteBuffer buffer = new ByteBuffer ();
-		buffer.Alloc (128);
-
-		buffer.WriteUShort (65535);
-
-		var ret = buffer.ReadUShort ();
+//		ByteBuffer buffer = new ByteBuffer ();
+//		buffer.Alloc (128);
+//
+//		buffer.WriteUShort (65535);
+//
+//		var ret = buffer.ReadUShort ();
 
 		int i = 0;
 		i++;
+
+
+
+
 	}
 
 //	private IEnumerable<ArraySegment<byte>> GetBuffs()

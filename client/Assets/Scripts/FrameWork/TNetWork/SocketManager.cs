@@ -171,20 +171,15 @@ namespace TG.Net
 
             PacketProperty property = packet.Property;
             switch (property) { 
-                case PacketProperty.Disconnect:
-                    break;
                 case PacketProperty.ConnectAccept:
                     break;
+                case PacketProperty.Disconnect:
+                    break;
                 default:
-
+                    socket.ProcessPacket(packet);
                     break;
             }
-
-
 		}
-
-
-
 		#endregion
 	}
 }

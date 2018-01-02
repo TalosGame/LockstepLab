@@ -41,7 +41,6 @@ public class TestAddress : MonoBehaviour, NetEventListener
 
 		socketMgr.SendMessage ("Hello netty!");
 
-
 // 		ConcurrentQueue<int> queue = new ConcurrentQueue<int> (3);
 // 		queue.Enqueue (10);
 // 		queue.Enqueue (20);
@@ -54,8 +53,8 @@ public class TestAddress : MonoBehaviour, NetEventListener
 //         num = queue.Dequeue();
 // 		Debug.Log ("num:" + num);
 
-        queue = new LockFreeQueue<int>();
-        stack = new LockFreeStack<int>();
+//        queue = new LockFreeQueue<int>();
+//        stack = new LockFreeStack<int>();
 
 //         queue.Enqueue(1);
 //         queue.Enqueue(2);
@@ -66,15 +65,15 @@ public class TestAddress : MonoBehaviour, NetEventListener
 
 //        queue.Enqueue(1);
 
-        sw = Stopwatch.StartNew();
-
-        Thread reporter = new Thread(new ThreadStart(EnqueueExecute));
-        reporter.IsBackground = true;
-        reporter.Start();
-
-        Thread reporter1 = new Thread(new ThreadStart(DequeueExecute));
-        reporter1.IsBackground = true;
-        reporter1.Start();
+//        sw = Stopwatch.StartNew();
+//
+//        Thread reporter = new Thread(new ThreadStart(EnqueueExecute));
+//        reporter.IsBackground = true;
+//        reporter.Start();
+//
+//        Thread reporter1 = new Thread(new ThreadStart(DequeueExecute));
+//        reporter1.IsBackground = true;
+//        reporter1.Start();
 
 //         Thread reporter = new Thread(new ThreadStart(EnqueueExecute1));
 //         reporter.IsBackground = true;
@@ -84,8 +83,8 @@ public class TestAddress : MonoBehaviour, NetEventListener
 //         reporter1.IsBackground = true;
 //         reporter1.Start();
 
-		UDebug.logEnable = true;
-		UDebug.Log (LogType.warning, "test error log");
+//		UDebug.logEnable = true;
+//		UDebug.Log (LogType.warning, "test error log");
 	}
 
     void EnqueueExecute()

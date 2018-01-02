@@ -86,8 +86,7 @@ namespace TG.Net
 	public sealed class NetConst
 	{
 		public const string POOL_NET_EVENT = "NetEvent";
-		public const string POOL_NET_PACKAGE = "NetPackage";
-		public const string POOL_UDP_NET_PACKET = "RUDPSocket";
+        public const string POOL_UDP_NET_PACKET = "UDPNetPacket";
 
 		// 这里可以根据需求自己调整
 		public const int SLIDING_WINDOW = 64;

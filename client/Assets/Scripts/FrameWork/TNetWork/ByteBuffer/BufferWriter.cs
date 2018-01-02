@@ -126,6 +126,11 @@ namespace TG.Net {
 			WriteIndex++;
         }
 
+        public void WriteBytes(int offset, byte[] bytes){
+            WriteIndex = offset;
+            WriteBytes(bytes, 0, bytes.Length);
+        }
+
 		public void WriteBytes(byte[] bytes) {
             WriteBytes(bytes, 0, bytes.Length);
         }

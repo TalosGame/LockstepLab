@@ -57,16 +57,23 @@ namespace TG.Net {
     public abstract class NetPacket {
 		public ByteBuffer buffer = new ByteBuffer();
 
+        public void Init(byte[] datas, int offset, int size){
+            this.buffer.Copy(datas, offset, size);
+        }
+
 		public void Init(PacketProperty property, int size){
 			this.buffer.Alloc(size);
 			this.Property = property;
 		}
 
-        public void Init(byte[] datas, int offset, int size){
-            this.buffer.Copy(datas, offset, size);
+        public void Init(PacketProperty property, byte[] datas){
+            int headSize = GetHeadSize(property);
+            this.buffer.Alloc(headSize + datas.Length);
+            this.Property = property;
+            this.buffer.WriteBytes(headSize, datas);
         }
 
-        public void Close() { 
+        public void Close() {
 			buffer.Release ();
         }
 

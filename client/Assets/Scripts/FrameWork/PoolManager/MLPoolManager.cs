@@ -65,14 +65,14 @@ public class MLPoolManager : MonoSingleton<MLPoolManager> {
             return;
         }
 
+        pool.Init(poolItem, preloadAmount, transform, isLimit);
+
         // check pool exist
         if (pools.GetPool(pool.ItemName) != null) {
             return;
         }
 
-        pool.Init(poolItem, preloadAmount, transform, isLimit);
         pool.CreatePoolItems();
-
         pools.AddPool(pool.ItemName, pool);
     }
 

@@ -105,6 +105,16 @@ namespace TG.Net
             return packet;
         }
 
+        protected NetPacket GetNetPacket(TNetType type, PacketProperty property, byte[] datas){
+            NetPacket packet = CreatePacket(type);
+            if (packet == null) {
+                throw new NullReferenceException ("packet");
+            }
+
+            packet.Init(property, datas);
+            return packet;
+        }
+
         private NetPacket CreatePacket(TNetType type){
             NetPacket packet = null;
             MLPoolManager poolMgr = MLPoolManager.Instance;
@@ -113,9 +123,9 @@ namespace TG.Net
                 case TNetType.TCP:
 
                     break;
+                default:
                     // udp packet
                     packet = poolMgr.Spawn<UDPNetPacket>(NetConst.POOL_UDP_NET_PACKET);
-                default:
                     break;
             }
 
@@ -135,5 +145,9 @@ namespace TG.Net
 		}
 
 		public abstract void SendTo (byte[] bytes);
+
+        public virtual void ProcessPacket(NetPacket packet){
+            
+        }
 	}
 }
