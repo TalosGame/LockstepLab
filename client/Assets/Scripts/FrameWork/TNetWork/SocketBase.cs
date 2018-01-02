@@ -119,7 +119,7 @@ namespace TG.Net
                     break;
             }
 
-            return packet;    
+            return packet;
         }
 
 		protected void CreateEvent(NetEventType type){

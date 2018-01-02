@@ -69,7 +69,7 @@ namespace TG.Net
 		public void Close(){
 			if (socket != null) {
 				socket.Close ();
-				socket = null;	
+				socket = null;
 			}
 		}
 
@@ -167,9 +167,24 @@ namespace TG.Net
                 return;
             }
 
+            // TODO simulator net latency
+
+            PacketProperty property = packet.Property;
+            switch (property) { 
+                case PacketProperty.Disconnect:
+                    break;
+                case PacketProperty.ConnectAccept:
+                    break;
+                default:
+
+                    break;
+            }
 
 
 		}
+
+
+
 		#endregion
 	}
 }
