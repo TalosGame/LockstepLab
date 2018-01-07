@@ -56,6 +56,12 @@ namespace TG.Net {
 			return ret;
 		}
 
+        public long ReadLong(){
+            long ret = BitConverter.ToInt64(buffer, ReadIndex);
+            ReadIndex += 8;
+            return ret;
+        }
+
         public byte ReadByte() {
             return buffer[ReadIndex++];
         }

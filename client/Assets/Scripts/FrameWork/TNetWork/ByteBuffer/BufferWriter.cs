@@ -53,6 +53,11 @@ namespace TG.Net {
 			WriteIndex += 4;
         }
 
+        public unsafe void WriteShort(int offset, short val){
+            WriteIndex = offset;
+            WriteShort(val);
+        }
+
         public unsafe void WriteShort(short val) {
             byte* ptrVal = (byte*)&val;
             fixed (byte* ptrDst = buffer) {
@@ -68,22 +73,10 @@ namespace TG.Net {
 			WriteIndex += 2;
         }
 
-		public unsafe void WriteShort(int offset, short val){
-			byte* ptrVal = (byte*)&val;
-			WriteIndex = offset;
-
-			fixed (byte* ptrDst = buffer) {
-#if BIGENDIAN
-				*(ptrDst + WriteIndex + 1) = *ptrVal;
-				*(ptrDst + WriteIndex) = *(ptrVal + 1);
-#else
-				*(ptrDst + WriteIndex) = *ptrVal;
-				*(ptrDst + WriteIndex + 1) = *(ptrVal + 1);
-#endif
-			}
-
-			WriteIndex += 2;
-		}
+        public unsafe void WriteUShort(int offset, ushort val){
+            WriteIndex = offset;
+            WriteUShort(val);
+        }
 
 		public unsafe void WriteUShort(ushort val){
 			byte* ptrVal = (byte*)&val;
@@ -101,22 +94,40 @@ namespace TG.Net {
 			WriteIndex += 2;
 		}
 
-		public unsafe void WriteUShort(int offset, ushort val){
-			byte* ptrVal = (byte*)&val;
-			WriteIndex = offset;
+        public unsafe void WriteLong(int offset, long val){
+            WriteIndex = offset;
+            WriteLong(val);
+        }
 
-			fixed (byte* ptrDst = buffer) {
-#if BIGENDIAN
-				*(ptrDst + WriteIndex + 1) = *ptrVal;
-				*(ptrDst + WriteIndex) = *(ptrVal + 1);
+        public unsafe void WriteLong(long val){
+            byte* ptrVal = (byte*)&val;
+            fixed (byte* ptrDst = buffer) {
+ #if BIGENDIAN
+                *(ptrDst + WriteIndex + 7) = *ptrVal;
+                *(ptrDst + WriteIndex + 6) = *(ptrVal + 1);
+                *(ptrDst + WriteIndex + 5) = *(ptrVal + 2);
+                *(ptrDst + writeIndex + 4) = *(ptrVal + 3);
+
+
+                *(ptrDst + WriteIndex + 3) = *(ptrVal + 4);
+                *(ptrDst + WriteIndex + 2) = *(ptrVal + 5);
+                *(ptrDst + WriteIndex + 1) = *(ptrVal + 6);
+                *(ptrDst + writeIndex) = *(ptrVal + 7);
 #else
-				*(ptrDst + WriteIndex) = *ptrVal;
-				*(ptrDst + WriteIndex + 1) = *(ptrVal + 1);
-#endif
-			}
+                *(ptrDst + WriteIndex) = *ptrVal;
+                *(ptrDst + WriteIndex + 1) = *(ptrVal + 1);
+                *(ptrDst + WriteIndex + 2) = *(ptrVal + 2);
+                *(ptrDst + WriteIndex + 3) = *(ptrVal + 3);
 
-			WriteIndex += 2;
-		}
+                *(ptrDst + WriteIndex + 4) = *(ptrVal + 4);
+                *(ptrDst + WriteIndex + 5) = *(ptrVal + 5);
+                *(ptrDst + WriteIndex + 6) = *(ptrVal + 6);
+                *(ptrDst + WriteIndex + 7) = *(ptrVal + 7);
+#endif
+            }
+
+            WriteIndex += 8;
+        }
 
         public unsafe void WriteByte(byte val) {
             byte* ptrVal = (byte*)&val;

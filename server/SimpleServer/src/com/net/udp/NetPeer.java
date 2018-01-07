@@ -1,4 +1,4 @@
-package com.net.core;
+package com.net.udp;
 
 public class NetPeer {
 	

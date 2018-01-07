@@ -37,7 +37,7 @@ namespace TG.Net
 			NetType = TNetType.TCP;
 		}
 
-		public override void SendTo (byte[] bytes)
+		public override void Send (byte[] bytes)
 		{
 			
 		}

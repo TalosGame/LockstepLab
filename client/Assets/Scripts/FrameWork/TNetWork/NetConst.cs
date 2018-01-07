@@ -111,6 +111,7 @@ namespace TG.Net
 		public const ushort HalfMaxSequence = MaxSequence / 2;
 
         public const int HEAD_SIZE = 1;
+        public const int SOCKET_TOKEN_SIZE = 8;
 		public const int SEQUENCE_HEAD_SIZE = HEAD_SIZE + 2;
 		public const int FRAGMENT_HEAD_SIZE = 6;
 

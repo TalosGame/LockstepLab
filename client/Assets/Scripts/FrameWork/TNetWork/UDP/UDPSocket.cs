@@ -47,7 +47,7 @@ namespace TG.Net
 			this.socket = new Socket (IPEndPoint.GetAddressFamily(), SocketType.Dgram, ProtocolType.Udp);
 		}
 
-		public override void SendTo (byte[] bytes){
+		public override void Send (byte[] bytes){
 			try{
 				
 				int ret = this.socket.SendTo (bytes, IPEndPoint.EndPoint);

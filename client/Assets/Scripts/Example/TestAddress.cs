@@ -40,6 +40,7 @@ public class TestAddress : MonoBehaviour, NetEventListener
 		socketMgr.Connect ("127.0.0.1", 8090);
 
 		socketMgr.SendMessage ("Hello netty!");
+        socketMgr.SendMessage ("Hello netty 2222!");
 
 // 		ConcurrentQueue<int> queue = new ConcurrentQueue<int> (3);
 // 		queue.Enqueue (10);

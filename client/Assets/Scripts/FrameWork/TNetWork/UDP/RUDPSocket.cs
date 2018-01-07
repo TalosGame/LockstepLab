@@ -93,10 +93,12 @@ namespace TG.Net
 
             this.receiveThread = new ThreadEx (RECEIVE_THREAD_NAME, -1, UpdateReceive);
             this.receiveThread.Start ();
+
+            // send connect request
         }
 
         #region send func logic
-        public override void SendTo (byte[] bytes){
+        public override void Send (byte[] bytes){
             UDPNetPacket packet = null;
             int headSize = NetPacket.GetHeadSize(PacketProperty.ReliableOrdered);
             int bodySize = bytes.Length;
@@ -149,28 +151,6 @@ namespace TG.Net
             DoPendingPacket (packet);
         }
 
-        private void DoSendPacket(UDPNetPacket packet){
-
-            int result = -1;
-            try{
-                result = socket.SendTo(packet.RawData, 0, packet.Length, SocketFlags.None, IPEndPoint.EndPoint);
-                Debug.LogFormat("[S]Send packet to {0}, result: {1}", IPEndPoint.EndPoint, result);
-
-            }catch(SocketException ex){
-                Debug.LogErrorFormat("[S]" + ex);
-            }
-
-            if (result != 0 && result != (int)SocketError.MessageSize && result != (int)SocketError.HostUnreachable)
-            {
-                CreateEvent (NetEventType.Error, result);
-            }
-
-            if (result == (int)SocketError.MessageSize)
-            {
-                Debug.LogFormat("[SRD] 10040, datalen: {0}", packet.Length);
-            }
-        }
-
         private void DoPendingPacket(UDPNetPacket packet){
             spinLock.Enter ();
             pendingPackages.Enqueue (packet);
@@ -193,7 +173,7 @@ namespace TG.Net
 
             for (int i = 0; i < curWindowSize; i++) {
                 UDPNetPacket packet = sendingPackets [localWindowStart % NetConst.SLIDING_WINDOW] as UDPNetPacket;
-                DoSendPacket (packet);
+                SendRawData(packet.RawData);
                 localWindowStart++;
             }
 
@@ -214,10 +194,6 @@ namespace TG.Net
             }
         }
 
-        private void UpdateSendPingMsg(){
-
-        }
-
         private bool IsRecentPacket(ushort preSeq, ushort curSeq){
             const ushort halfVal = ushort.MaxValue / 2;
             if (preSeq < curSeq && curSeq - preSeq <= halfVal
@@ -226,6 +202,27 @@ namespace TG.Net
             }
 
             return false;
+        }
+
+        public override void SendRawData(byte[] bytes){
+            int result = -1;
+            try{
+                result = socket.SendTo(bytes, 0, bytes.Length, SocketFlags.None, IPEndPoint.EndPoint);
+                Debug.LogFormat("[S]Send packet to {0}, result: {1}", IPEndPoint.EndPoint, result);
+
+            }catch(SocketException ex){
+                Debug.LogErrorFormat("[S]" + ex);
+            }
+
+            if (result != 0 && result != (int)SocketError.MessageSize && result != (int)SocketError.HostUnreachable)
+            {
+                CreateEvent (NetEventType.Error, result);
+            }
+
+            if (result == (int)SocketError.MessageSize)
+            {
+                Debug.LogFormat("[SRD] 10040, datalen: {0}", bytes.Length);
+            }
         }
         #endregion
 

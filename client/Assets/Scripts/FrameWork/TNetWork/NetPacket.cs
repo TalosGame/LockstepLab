@@ -84,7 +84,7 @@ namespace TG.Net {
 		}
 
 		public int Length{
-			get{ 
+			get{
 				return buffer.Length;
 			}
 		}
@@ -104,11 +104,51 @@ namespace TG.Net {
 		}
 
 		public PacketProperty Property {
-			get { return (PacketProperty)(RawData[0] & 0x7F); }
+			get { return (PacketProperty)(RawData[0] & 0x3F); }
 			set {
-				RawData[0] = (byte)((RawData[0] & 0x80) | ((byte)value & 0x7F));
+				RawData[0] = (byte)((RawData[0] & 0xC0) | ((byte)value & 0x3F));
 			}
 		}
+
+        public long Token{
+            get{ 
+                if (!WriteToken){
+                    return -1;
+                }
+
+                return BitConverter.ToInt64(RawData, 1); 
+            }
+
+            set{
+                WriteToken = true;
+                buffer.WriteLong(1, value);
+            }
+        }
+
+        private bool WriteToken{
+            get {
+                return (RawData[0] & 0x40) != 0;
+            }
+
+            set {
+                if (value) {
+                    RawData[0] |= 0x40;
+                    return;
+                }
+
+                RawData[0] &= 0xBF;
+            }
+        }
+
+        protected int TokenLen{
+            get{ 
+                if (WriteToken){
+                    return NetConst.SOCKET_TOKEN_SIZE;
+                }
+
+                return 0;
+            }
+        }
 
 		public void WriteBytes(byte[] bytes, int offset, int size){
 			buffer.WriteBytes (bytes, offset, size);
@@ -116,11 +156,12 @@ namespace TG.Net {
     }
 
     /// <summary>
-    /// 0 Fragment & Property
-    /// 1 data or ack Sequence Number
-    /// 3 FragmentId
-    /// 5 FragmentPart
-    /// 7 FragmentsTotal
+    /// 0 Fragment & Token & Property
+    /// 8 or 0 Token
+    /// 2 data or ack Sequence Number
+    /// 2 FragmentId
+    /// 2 FragmentPart
+    /// 2 FragmentsTotal
     /// </summary>
     public class UDPNetPacket : NetPacket {
         public bool IsFragment {
@@ -139,28 +180,25 @@ namespace TG.Net {
         }
 
         public ushort Sequence {
-			get { return (ushort)(BitConverter.ToUInt16(RawData, 1)); }
+            get { return (ushort)(BitConverter.ToUInt16(RawData, 1 + TokenLen)); }
             set {
-				buffer.WriteUShort(1, value);
+                buffer.WriteUShort(1 + TokenLen, value);
             }
         }
 
         public ushort FragmentId {
-			get { return BitConverter.ToUInt16(RawData, 3); }
-			set { buffer.WriteUShort(3, value); }
+            get { return BitConverter.ToUInt16(RawData, 3 + TokenLen); }
+            set { buffer.WriteUShort(3 + TokenLen, value); }
         }
 
         public ushort FragmentPart {
-			get { return BitConverter.ToUInt16(RawData, 5); }
-			set { buffer.WriteUShort(5, value); }
+            get { return BitConverter.ToUInt16(RawData, 5 + TokenLen); }
+            set { buffer.WriteUShort(5 + TokenLen, value); }
         }
 
         public ushort FragmentsTotal {
-			get { return BitConverter.ToUInt16(RawData, 7); }
-			set { buffer.WriteUShort(7, value); }
+            get { return BitConverter.ToUInt16(RawData, 7 + TokenLen); }
+            set { buffer.WriteUShort(7 + TokenLen, value); }
         }
     }
 }
-
-
-

@@ -56,12 +56,15 @@ public class TBufferPool : MonoBehaviour {
 //
 //		var ret = buffer.ReadUShort ();
 
-		int i = 0;
-		i++;
+        ByteBuffer buffer = new ByteBuffer ();
+        buffer.Alloc (128);
+        long a = long.MaxValue;
+        buffer.WriteLong (a);
 
+        var ret = buffer.ReadLong ();
 
-
-
+        int i = 0;
+        i++;
 	}
 
 //	private IEnumerable<ArraySegment<byte>> GetBuffs()

@@ -1,8 +1,6 @@
-import com.net.handle.UDPServiceHandler;
-
+package com.net.udp;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -10,8 +8,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 
 public class UDPService implements Runnable {
-	private Bootstrap bs;
-	private EventLoopGroup nioEventLoopGroup;
 	private int port;
 
 	public UDPService(int port) {
@@ -20,23 +16,19 @@ public class UDPService implements Runnable {
 
 	@Override
 	public void run() {
-		try {
-			nioEventLoopGroup = new NioEventLoopGroup();
+		EventLoopGroup acceptor = null;
 
-			bs = new Bootstrap();
-			bs.group(nioEventLoopGroup);
+		try {
+			acceptor = new NioEventLoopGroup();
+			
+			Bootstrap bs = new Bootstrap();
+			bs.group(acceptor);
 			bs.channel(NioDatagramChannel.class);
 			bs.option(ChannelOption.SO_BROADCAST, true);
 			bs.handler(new ChannelInitializer<NioDatagramChannel>() {
 				@Override
 				protected void initChannel(NioDatagramChannel ch) throws Exception {
-					//  receive client request
 					ch.pipeline().addLast(new UDPServiceHandler());
-				}
-
-				@Override
-				public void channelActive(ChannelHandlerContext ctx) throws Exception {
-					super.channelActive(ctx);
 				}
 			});
 
@@ -45,7 +37,7 @@ public class UDPService implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			nioEventLoopGroup.shutdownGracefully();
+			acceptor.shutdownGracefully();
 		}
 	}
 }

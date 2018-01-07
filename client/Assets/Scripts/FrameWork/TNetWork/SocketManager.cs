@@ -98,12 +98,12 @@ namespace TG.Net
             socket.Connect(host, port);
         }
 
-		public void SendMessage(string str){
-			byte[] bytes = UTF8Encoding.Default.GetBytes (str);
-			socket.SendTo (bytes);
-		}
+//		public void SendMessage(string str){
+//			byte[] bytes = UTF8Encoding.Default.GetBytes (str);
+//			socket.SendTo (bytes);
+//		}
 
-		public void SendBytes(){
+        public void SendTo(byte[] bytes){
 			
 		}
 
@@ -142,8 +142,7 @@ namespace TG.Net
 			while (eventsQueue.Count > 0){
 				
 				NetEvent evt;
-				lock (eventsQueue)
-				{
+				lock (eventsQueue){
 					evt = eventsQueue.Dequeue();
 				}
 
@@ -153,7 +152,7 @@ namespace TG.Net
 
 		private void ProcessEvent(NetEvent evt){
 			switch (evt.type) {
-			case NetEventType.Connect:
+                case NetEventType.Connect:
 				
 				break;
 			}
@@ -172,6 +171,12 @@ namespace TG.Net
             PacketProperty property = packet.Property;
             switch (property) { 
                 case PacketProperty.ConnectAccept:
+
+//                    var connectEvent = CreateEvent(NetEventType.Connect);
+//                    connectEvent.Peer = netPeer;
+//                    EnqueueEvent(connectEvent);
+
+
                     break;
                 case PacketProperty.Disconnect:
                     break;

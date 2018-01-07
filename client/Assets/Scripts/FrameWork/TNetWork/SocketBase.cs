@@ -46,6 +46,8 @@ namespace TG.Net
             get { return _ipEndPoint; }
         }
 
+        //protected long token;
+
 		public TNetType NetType {
 			get{
                 return _ipEndPoint.NetType;
@@ -63,27 +65,37 @@ namespace TG.Net
 			this.messageReceived = messageReceived;
 		}
 
+        #region connect & close
 		public void Connect (string host, int port){
             _ipEndPoint = new NetIPEndPoint(host, port);
 
 			OnConnect ();
 
-			CreateEvent (NetEventType.Connect);
+            SendConnectRequest();
 		}
 
 		protected virtual void OnConnect(){}
 
-		public void Close(){
-			OnClose ();
+        private void SendConnectRequest()
+        {
+            NetPacket packet = GetNetPacket(NetType, PacketProperty.ConnectRequest, NetConst.HEAD_SIZE);
+            SendAndRecycle(packet);
+        }
 
-			if (socket != null) {
-				socket.Close ();
-				socket = null;
-			}
-		}
+        public void Close(){
+            OnClose ();
 
-		protected virtual void OnClose(){}
+            if (socket != null) {
+                socket.Close ();
+                socket = null;
+            }
+        }
 
+        protected virtual void OnClose(){}
+
+        #endregion
+
+        #region packet & event
 		protected NetPacket GetNetPacket(TNetType type, PacketProperty property, int size){
             NetPacket packet = CreatePacket(type);
 			if (packet == null) {
@@ -143,8 +155,24 @@ namespace TG.Net
 		protected void CreateEvent(NetEventType type, byte[] datas){
             socketMgr.CreateEvent (type, datas);
 		}
+        #endregion
 
-		public abstract void SendTo (byte[] bytes);
+        private void SendAndRecycle(NetPacket packet){
+            switch(packet.Property){
+                
+                case PacketProperty.ConnectRequest:
+                case PacketProperty.Ping:
+                    // TODO other property packet
+                    SendRawData(packet.RawData);
+                    packet.Close();
+                    MLPoolManager.Instance.Despawn(NetConst.POOL_UDP_NET_PACKET, packet);
+                    break;
+            }
+        }
+
+		public abstract void Send (byte[] bytes);
+
+        public abstract void SendRawData(byte[]bytes);
 
         public virtual void ProcessPacket(NetPacket packet){
             
